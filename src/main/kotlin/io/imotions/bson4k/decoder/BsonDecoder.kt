@@ -2,6 +2,7 @@ package io.imotions.bson4k.decoder
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.AbstractDecoder
@@ -17,6 +18,7 @@ class BsonDecoder(
     private val reader: AbstractBsonReader,
     override val serializersModule: SerializersModule
 ) : AbstractDecoder() {
+    val classDiscriminator = "__type"
     private var stateStack = ArrayDeque<Pair<DecoderState, Int>>()
     private var state = DecoderState.DOCUMENT
     private var currentIndex = -1
@@ -41,6 +43,22 @@ class BsonDecoder(
                 if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else 0
             }
             DecoderState.MAP_VALUE -> 1
+            DecoderState.POLYMORPHIC -> {
+                when (currentIndex) {
+                    0 -> {
+                        if (reader.state == TYPE) {
+                            reader.readBsonType()
+                        }
+                        if (reader.readName() == classDiscriminator) {
+                            currentIndex++
+                        } else {
+                            throw SerializationException("Unknown class discriminator. Expected \"$classDiscriminator\"")
+                        }
+                    }
+                    1 -> currentIndex++
+                    else -> DECODE_DONE
+                }
+            }
         }
     }
 
@@ -48,17 +66,24 @@ class BsonDecoder(
         preserveState()
         when (descriptor.kind) {
             StructureKind.LIST -> {
-                reader.readStartArray()
                 state = DecoderState.LIST
                 currentIndex = -1
+                reader.readStartArray()
             }
             StructureKind.MAP -> {
                 state = DecoderState.MAP_KEY
                 reader.readStartDocument()
             }
-            is StructureKind -> {
-                state = DecoderState.DOCUMENT
+            is PolymorphicKind -> {
+                state = DecoderState.POLYMORPHIC
+                currentIndex = 0
                 reader.readStartDocument()
+            }
+            is StructureKind -> {
+                if (state != DecoderState.POLYMORPHIC) {
+                    reader.readStartDocument()
+                }
+                state = DecoderState.DOCUMENT
             }
         }
         return super.beginStructure(descriptor)
@@ -128,7 +153,8 @@ class BsonDecoder(
         DOCUMENT,
         LIST,
         MAP_KEY,
-        MAP_VALUE
+        MAP_VALUE,
+        POLYMORPHIC,
     }
 
     private fun preserveState() {
