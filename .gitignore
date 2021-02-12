@@ -26,3 +26,5 @@ hs_err_pid*
 .idea
 build
 
+# Add necessary package files
+!**/gradle/wrapper/gradle-wrapper.jar

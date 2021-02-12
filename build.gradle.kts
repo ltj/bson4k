@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.30"
+    `maven-publish`
 }
 
 group = "io.imotions.bson4k"
@@ -28,5 +29,29 @@ tasks.test {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+}
+
+val sourcesJar by tasks.registering(Jar::class) {
+    archiveClassifier.set("sources")
+    from(sourceSets.main.get().allSource)
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/OWNER/REPOSITORY")
+            credentials {
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+            }
+        }
+    }
+    publications {
+        register("gpr", MavenPublication::class) {
+            from(components["java"])
+            artifact(sourcesJar.get())
+        }
     }
 }
