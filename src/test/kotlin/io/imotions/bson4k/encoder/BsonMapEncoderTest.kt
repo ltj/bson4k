@@ -1,21 +1,14 @@
 package io.imotions.bson4k.encoder
 
+import io.imotions.bson4k.common.MapWrapper
+import io.imotions.bson4k.common.Wrapper
+import io.imotions.bson4k.common.Wrapper2
 import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import org.bson.BsonInt32
-
-@Serializable
-data class TestMapNested(val z: Float)
-
-@Serializable
-data class TestMapValue(val x: String, val y: TestMapNested)
-
-@Serializable
-data class TestMapWrapper<K, V>(val map: Map<K, V>)
 
 @ExperimentalSerializationApi
 class BsonMapEncoderTest : StringSpec({
@@ -29,8 +22,8 @@ class BsonMapEncoderTest : StringSpec({
 
     "Encode map with composite values" {
         val map = mapOf(
-            10 to TestMapValue("abc", TestMapNested(42.5F)),
-            20 to TestMapValue("cde", TestMapNested(123.45F))
+            10 to Wrapper2("abc", Wrapper(42.5F)),
+            20 to Wrapper2("cde", Wrapper(123.45F))
         )
 
         val document = bson.encodeToBsonDocument(map)
@@ -39,10 +32,10 @@ class BsonMapEncoderTest : StringSpec({
 
     "Encode nested map" {
         val map = mapOf(
-            10 to TestMapValue("abc", TestMapNested(42.5F)),
-            20 to TestMapValue("cde", TestMapNested(123.45F))
+            10 to Wrapper2("abc", Wrapper(42.5F)),
+            20 to Wrapper2("cde", Wrapper(123.45F))
         )
-        val wrapper = TestMapWrapper(map)
+        val wrapper = MapWrapper(map)
         val document = bson.encodeToBsonDocument(wrapper)
             .also { println(it.toJson()) }
     }

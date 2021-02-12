@@ -1,17 +1,13 @@
 package io.imotions.bson4k.encoder
 
+import io.imotions.bson4k.common.Wrapper
+import io.imotions.bson4k.common.CollectionWrapper
 import io.imotions.bson4k.common.bson
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-
-@Serializable
-data class TestItem(val name: String)
-
-@Serializable
-data class CollectionWrapper<T>(val collection: Collection<T>)
 
 @ExperimentalSerializationApi
 class BsonCollectionEncoderTest : StringSpec({
@@ -22,16 +18,16 @@ class BsonCollectionEncoderTest : StringSpec({
         }
     }
 
-    "Encode wrapped primitive collection" {
-        val list = listOf("one", "two", "three")
-        val document = bson.encodeToBsonDocument(CollectionWrapper(list))
-            .also { println(it) }
+    "Encode String collection" {
+        checkAll<List<String>> { list ->
+            bson.encodeToBsonDocument(CollectionWrapper(list))
+        }
     }
 
     "Encode wrapped reference type collection" {
-        val list = listOf(TestItem("one"), TestItem("two"), TestItem("three"))
-        val document = bson.encodeToBsonDocument(CollectionWrapper(list))
-            .also { println(it) }
+        checkAll<List<Double>> { list ->
+            bson.encodeToBsonDocument(CollectionWrapper(list.map { Wrapper(it) }))
+        }
     }
 
     "Encode collection of objects with collections" {

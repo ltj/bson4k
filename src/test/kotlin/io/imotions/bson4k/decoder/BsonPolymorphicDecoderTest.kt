@@ -9,54 +9,54 @@ import org.bson.Document
 
 class BsonPolymorphicDecoderTest : StringSpec({
     "Decode polymorphic type" {
-        val doc = Document(CLASS_DISCRIMINATOR, SealedTest.PolyOne::class.qualifiedName)
+        val doc = Document(CLASS_DISCRIMINATOR, SealedClass.PolyOne::class.qualifiedName)
             .append("value", 42)
             .toBsonDocument()
         println(doc.toJson())
 
-        val deserialized = bson.decodeFromBsonDocument<SealedTest>(doc)
-        deserialized shouldBe SealedTest.PolyOne(42)
+        val deserialized = bson.decodeFromBsonDocument<SealedClass>(doc)
+        deserialized shouldBe SealedClass.PolyOne(42)
     }
 
     "Throw error on unknown class discriminator" {
-        val doc = Document("#type", SealedTest.PolyOne::class.qualifiedName)
+        val doc = Document("#type", SealedClass.PolyOne::class.qualifiedName)
             .append("value", 42)
             .toBsonDocument()
         println(doc.toJson())
 
-        shouldThrow<SerializationException> { bson.decodeFromBsonDocument<SealedTest>(doc) }
+        shouldThrow<SerializationException> { bson.decodeFromBsonDocument<SealedClass>(doc) }
     }
 
     "Decode wrapped polymorphic type" {
         val doc = Document(
             "value", Document(
                 CLASS_DISCRIMINATOR,
-                SealedTest.PolyTwo::class.qualifiedName
+                SealedClass.PolyTwo::class.qualifiedName
             )
                 .append("value", "text")
         ).toBsonDocument()
         println(doc.toJson())
 
-        val deserialized = bson.decodeFromBsonDocument<BasicWrapper<SealedTest>>(doc)
-        deserialized shouldBe BasicWrapper(SealedTest.PolyTwo("text"))
+        val deserialized = bson.decodeFromBsonDocument<Wrapper<SealedClass>>(doc)
+        deserialized shouldBe Wrapper(SealedClass.PolyTwo("text"))
     }
 
     "Decode wrapper polymorphic array" {
         val list = listOf(
-            SealedTest.PolyOne(42),
-            SealedTest.PolyTwo("text")
+            SealedClass.PolyOne(42),
+            SealedClass.PolyTwo("text")
         )
         val doc = Document(
             "collection", listOf(
-                Document(CLASS_DISCRIMINATOR, SealedTest.PolyOne::class.qualifiedName)
+                Document(CLASS_DISCRIMINATOR, SealedClass.PolyOne::class.qualifiedName)
                     .append("value", 42),
-                Document(CLASS_DISCRIMINATOR, SealedTest.PolyTwo::class.qualifiedName)
+                Document(CLASS_DISCRIMINATOR, SealedClass.PolyTwo::class.qualifiedName)
                     .append("value", "text")
             )
         ).toBsonDocument()
         println(doc.toJson())
 
-        val deserialized = bson.decodeFromBsonDocument<CollectionWrapper<SealedTest>>(doc)
+        val deserialized = bson.decodeFromBsonDocument<CollectionWrapper<SealedClass>>(doc)
         deserialized shouldBe CollectionWrapper(list)
     }
 })

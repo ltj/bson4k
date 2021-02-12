@@ -1,8 +1,8 @@
 package io.imotions.bson4k.decoder
 
+import io.imotions.bson4k.common.MapWrapper
+import io.imotions.bson4k.common.Wrapper
 import io.imotions.bson4k.common.bson
-import io.imotions.bson4k.encoder.TestMapNested
-import io.imotions.bson4k.encoder.TestMapWrapper
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -36,17 +36,17 @@ class BsonMapDecoderTest : StringSpec({
 
     "Decode to map with composite values" {
         val map = mapOf(
-            10 to TestMapNested(42.5F),
-            20 to TestMapNested(123.45F)
+            10 to Wrapper(42.5F),
+            20 to Wrapper(123.45F)
         )
         val document = Document(
             "map", Document()
-                .append("10", Document("z", 42.5F))
-                .append("20", Document("z", 123.45F))
+                .append("10", Document("value", 42.5F))
+                .append("20", Document("value", 123.45F))
         ).toBsonDocument()
         println(document.toJson())
 
-        val deserialized = bson.decodeFromBsonDocument<TestMapWrapper<Int, TestMapNested>>(document)
-        deserialized shouldBe TestMapWrapper(map)
+        val deserialized = bson.decodeFromBsonDocument<MapWrapper<Int, Wrapper<Float>>>(document)
+        deserialized shouldBe MapWrapper(map)
     }
 })

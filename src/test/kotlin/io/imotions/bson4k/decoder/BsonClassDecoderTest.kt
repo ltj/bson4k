@@ -1,38 +1,33 @@
 package io.imotions.bson4k.decoder
 
+import io.imotions.bson4k.common.Wrapper
+import io.imotions.bson4k.common.Wrapper2
 import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.Serializable
 import org.bson.Document
-
-@Serializable
-data class TestClass(val a: String, val b: Float)
-
-@Serializable
-data class NestingTestClass(val testClass: TestClass)
 
 @ExperimentalSerializationApi
 class BsonClassDecoderTest : StringSpec({
     "Decode simple class" {
-        val document = Document("a", "hello").append("b", 34.5F).toBsonDocument()
-        val testClass = bson.decodeFromBsonDocument<TestClass>(document)
+        val document = Document("x", "hello").append("y", 34.5F).toBsonDocument()
+        val testClass = bson.decodeFromBsonDocument<Wrapper2<String, Float>>(document)
 
-        testClass shouldBe TestClass("hello", 34.5F)
+        testClass shouldBe Wrapper2("hello", 34.5F)
     }
 
     "Decode simple class with fields reversed" {
-        val document = Document("b", 34.5F).append("a", "hello").toBsonDocument()
-        val testClass = bson.decodeFromBsonDocument<TestClass>(document)
+        val document = Document("y", 34.5F).append("x", "hello").toBsonDocument()
+        val testClass = bson.decodeFromBsonDocument<Wrapper2<String, Float>>(document)
 
-        testClass shouldBe TestClass("hello", 34.5F)
+        testClass shouldBe Wrapper2("hello", 34.5F)
     }
 
     "Decode nested class" {
-        val document = Document("testClass", Document("a", "world").append("b", 10.45F))
-        val nestingTestClass = bson.decodeFromBsonDocument<NestingTestClass>(document.toBsonDocument())
+        val document = Document("value", Document("x", "world").append("y", 10.45F))
+        val nestingTestClass = bson.decodeFromBsonDocument<Wrapper<Wrapper2<String, Float>>>(document.toBsonDocument())
 
-        nestingTestClass shouldBe NestingTestClass(TestClass("world", 10.45F))
+        nestingTestClass shouldBe Wrapper(Wrapper2("world", 10.45F))
     }
 })
