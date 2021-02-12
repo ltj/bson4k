@@ -1,15 +1,13 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.Bson
 import io.imotions.bson4k.CLASS_DISCRIMINATOR
+import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
-@ExperimentalSerializationApi
-private val bson = Bson()
 private val json = Json { classDiscriminator = CLASS_DISCRIMINATOR }
 
 @Serializable

@@ -1,15 +1,12 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import org.bson.BsonInt32
-
-@ExperimentalSerializationApi
-private val bson = Bson()
 
 @Serializable
 data class TestMapNested(val z: Float)

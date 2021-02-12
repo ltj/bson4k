@@ -1,6 +1,6 @@
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.imotions.bson4k.encoder.PrimitiveWrapper
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
@@ -10,8 +10,6 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import org.bson.Document
 
-@ExperimentalSerializationApi
-private val bson = Bson()
 private val valueKey = "value"
 
 @ExperimentalSerializationApi

@@ -1,14 +1,12 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.bson.BsonInt32
 import org.bson.BsonNull
 import org.bson.BsonString
@@ -21,9 +19,6 @@ data class TestClassLv1(val x: Long, val y: String?, val testClassLv2: TestClass
 
 @Serializable
 data class TestClassTop(val x: String, val testClassLv1s: Set<TestClassLv1>)
-
-@ExperimentalSerializationApi
-private val bson = Bson()
 
 @Serializable
 object TestObject {

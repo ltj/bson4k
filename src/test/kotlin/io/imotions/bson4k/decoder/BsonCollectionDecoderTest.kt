@@ -1,6 +1,6 @@
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.imotions.bson4k.encoder.CollectionWrapper
 import io.imotions.bson4k.encoder.TestItem
 import io.kotest.core.spec.style.StringSpec
@@ -8,8 +8,6 @@ import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import org.bson.Document
-
-private val bson = Bson()
 
 private val list = listOf(12, 34, 56, 78, 90)
 private val nullableList = listOf(12, null, 56, 78, null)

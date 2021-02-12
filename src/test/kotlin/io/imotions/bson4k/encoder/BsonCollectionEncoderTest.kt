@@ -1,14 +1,11 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-
-@ExperimentalSerializationApi
-private val bson = Bson()
 
 @Serializable
 data class TestItem(val name: String)

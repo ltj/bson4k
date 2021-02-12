@@ -36,16 +36,25 @@ class BsonDecoder(
                 val type = reader.readBsonType()
                 if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else ++currentIndex
             }
+            DecoderState.MAP_KEY -> {
+                val type = reader.readBsonType()
+                if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else 0
+            }
+            DecoderState.MAP_VALUE -> 1
         }
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
-        stateStack.addLast(state to currentIndex) // Preserve state on new structure
+        preserveState()
         when (descriptor.kind) {
             StructureKind.LIST -> {
                 reader.readStartArray()
                 state = DecoderState.LIST
                 currentIndex = -1
+            }
+            StructureKind.MAP -> {
+                state = DecoderState.MAP_KEY
+                reader.readStartDocument()
             }
             is StructureKind -> {
                 state = DecoderState.DOCUMENT
@@ -56,10 +65,7 @@ class BsonDecoder(
     }
 
     override fun endStructure(descriptor: SerialDescriptor) {
-        with(stateStack.removeLast()) { // Restore state
-            state = this.first
-            currentIndex = this.second
-        }
+        restoreState()
         when (descriptor.kind) {
             StructureKind.LIST -> {
                 reader.readEndArray()
@@ -75,38 +81,69 @@ class BsonDecoder(
         return reader.currentBsonType != BsonType.NULL
     }
 
-    override fun decodeBoolean(): Boolean = decodeBsonElement(reader::readBoolean)
+    override fun decodeBoolean(): Boolean = decodeBsonElement(reader::readBoolean, String::toBoolean)
 
     override fun decodeByte(): Byte = decodeInt().toByte()
 
     override fun decodeChar(): Char = decodeString().first()
 
-    override fun decodeDouble(): Double = decodeBsonElement(reader::readDouble)
+    override fun decodeDouble(): Double = decodeBsonElement(reader::readDouble, String::toDouble)
 
     override fun decodeFloat(): Float = decodeDouble().toFloat()
 
-    override fun decodeInt(): Int = decodeBsonElement(reader::readInt32)
+    override fun decodeInt(): Int = decodeBsonElement(reader::readInt32, String::toInt)
 
-    override fun decodeLong(): Long = decodeBsonElement(reader::readInt64)
+    override fun decodeLong(): Long = decodeBsonElement(reader::readInt64, String::toLong)
 
-    override fun decodeNull(): Nothing? = decodeBsonElement {
-        reader.readNull()
-        null
-    }
+    override fun decodeNull(): Nothing? = decodeBsonElement(
+        {
+            reader.readNull()
+            null
+        },
+        { null }
+    )
 
     override fun decodeShort(): Short = decodeInt().toShort()
 
-    override fun decodeString(): String = decodeBsonElement(reader::readString)
+    override fun decodeString(): String = decodeBsonElement(reader::readString) { it }
 
-    private fun <T> decodeBsonElement(readOps: () -> T): T {
+    private fun <T> decodeBsonElement(readOps: () -> T, fromString: (String) -> T): T {
         if (reader.state == INITIAL) {
             throw SerializationException("Bson document cannot be decoded to a primitive type")
         }
-        return readOps()
+        return when (state) {
+            DecoderState.MAP_KEY -> {
+                state = DecoderState.MAP_VALUE
+                fromString(reader.readName())
+            }
+            DecoderState.MAP_VALUE -> {
+                state = DecoderState.MAP_KEY
+                readOps()
+            }
+            else -> readOps()
+        }
     }
 
     internal enum class DecoderState {
         DOCUMENT,
-        LIST
+        LIST,
+        MAP_KEY,
+        MAP_VALUE
+    }
+
+    private fun preserveState() {
+        val currentState = if (state == DecoderState.MAP_VALUE) {
+            DecoderState.MAP_KEY // swap state so we return to key after composite value
+        } else {
+            state
+        }
+        stateStack.addLast(currentState to currentIndex)
+    }
+
+    private fun restoreState() {
+        with(stateStack.removeLast()) { // Restore state
+            state = this.first
+            currentIndex = this.second
+        }
     }
 }

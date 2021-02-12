@@ -1,6 +1,6 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.Bson
+import io.imotions.bson4k.common.bson
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeExactly
@@ -11,8 +11,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.bson.*
 
-@ExperimentalSerializationApi
-private val bson = Bson()
 private const val VALUE_KEY = "value"
 
 private fun assertPrimitiveStructure(document: BsonDocument) {
