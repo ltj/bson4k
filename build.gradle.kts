@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.imotions.bson4k"
-version = "1.0-SNAPSHOT"
+version = "0.1-RC1"
 
 val ktlint by configurations.creating
 
