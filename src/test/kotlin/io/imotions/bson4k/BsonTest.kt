@@ -1,30 +1,27 @@
 package io.imotions.bson4k
 
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
-import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.shouldBe
-import kotlinx.serialization.Serializable
-import org.bson.BsonInt32
-import org.bson.BsonString
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.modules.EmptySerializersModule
+import java.lang.IllegalArgumentException
 
-class BsonTest: StringSpec() {
-    private val bson = Bson()
-
-    init {
-        "Encoder should encode data class of primitive types" {
-            @Serializable
-            data class Person(
-                val name: String,
-                val age: Int
-            )
-
-            val document = bson.encodeToBsonDocument(Person("Fred", 42))
-                .also { println(it.toJson()) }
-
-            document.keys shouldContainAll listOf("name", "age")
-            document.getString("name") shouldBe BsonString("Fred")
-            document.getInt32("age") shouldBe BsonInt32(42)
-        }
+@ExperimentalSerializationApi
+class BsonTest: StringSpec({
+    "Builder should return Bson with default configuration" {
+        val bson = Bson { }
+        bson.configuration.classDiscriminator shouldBe CLASS_DISCRIMINATOR
+        bson.configuration.serializersModule shouldBe EmptySerializersModule
     }
 
-}
+    "Builder should fail on invalid chars in class discriminator" {
+        shouldThrow<IllegalArgumentException> {
+            Bson { classDiscriminator = "\$type" }
+        }
+
+        shouldThrow<IllegalArgumentException> {
+            Bson { classDiscriminator = "type.."}
+        }
+    }
+})
