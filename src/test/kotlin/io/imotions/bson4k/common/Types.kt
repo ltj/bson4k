@@ -38,3 +38,13 @@ class Class3<A, B, C>(val x: A, val y: B, val z: C)
 
 @Serializable
 class Class2Collection<A, B>(val x: A, val y: Collection<B>)
+
+// Enums
+
+@Serializable
+enum class EnumClass {
+    FIRST,
+    SECOND,
+    THIRD,
+    FOURTH
+}

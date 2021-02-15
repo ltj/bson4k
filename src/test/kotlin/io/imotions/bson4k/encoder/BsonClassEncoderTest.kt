@@ -2,6 +2,7 @@ package io.imotions.bson4k.encoder
 
 import io.imotions.bson4k.common.Class2
 import io.imotions.bson4k.common.Class3
+import io.imotions.bson4k.common.EnumClass
 import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
@@ -55,5 +56,13 @@ class BsonClassEncoderTest : StringSpec({
             .also { println(it.toJson()) }
 
         document["y"] shouldBe BsonNull()
+    }
+
+    "Encode enum fields" {
+        val clazz = Class2<Byte, EnumClass>(16, EnumClass.THIRD)
+        val document = bson.encodeToBsonDocument(clazz)
+            .also { println(it) }
+
+        document["y"] shouldBe BsonString(EnumClass.THIRD.name)
     }
 })

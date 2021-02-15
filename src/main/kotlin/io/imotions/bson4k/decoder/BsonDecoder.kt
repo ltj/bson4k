@@ -134,6 +134,9 @@ class BsonDecoder(
 
     override fun decodeString(): String = decodeBsonElement(reader::readString) { it }
 
+    override fun decodeEnum(enumDescriptor: SerialDescriptor): Int =
+        enumDescriptor.getElementIndex(decodeString())
+
     private fun <T> decodeBsonElement(readOps: () -> T, fromString: (String) -> T): T {
         if (reader.state == INITIAL) {
             throw SerializationException("Bson document cannot be decoded to a primitive type")
