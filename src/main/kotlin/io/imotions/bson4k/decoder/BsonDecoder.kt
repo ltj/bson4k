@@ -2,7 +2,6 @@ package io.imotions.bson4k.decoder
 
 import io.imotions.bson4k.BsonConf
 import io.imotions.bson4k.BsonKind
-import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -34,15 +33,16 @@ class BsonDecoder(
     private var useMapper: BsonKind = BsonKind.PASS_THROUGH
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
-        return when (state) {
+        val idx = when (state) {
             DecoderState.DOCUMENT -> {
                 if (reader.state == TYPE) {
                     reader.readBsonType()
                 }
                 if (reader.state == NAME) {
-                    return descriptor.getElementIndex(reader.readName())
+                    descriptor.getElementIndex(reader.readName())
+                } else {
+                    DECODE_DONE
                 }
-                DECODE_DONE
             }
             DecoderState.LIST -> {
                 val type = reader.readBsonType()
@@ -72,11 +72,11 @@ class BsonDecoder(
                 }
             }
         }
-    }
 
-    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>, previousValue: T?): T {
-        useMapper = conf.bsonTypeMappings.getOrDefault(deserializer.descriptor.serialName, BsonKind.PASS_THROUGH)
-        return super.decodeSerializableValue(deserializer, previousValue)
+        if (idx >= 0) useMapper =
+            conf.bsonTypeMappings.getOrDefault(descriptor.getElementDescriptor(idx).serialName, BsonKind.PASS_THROUGH)
+
+        return idx
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {

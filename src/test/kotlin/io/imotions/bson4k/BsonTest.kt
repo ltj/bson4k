@@ -1,9 +1,6 @@
 package io.imotions.bson4k
 
-import io.imotions.bson4k.common.BsonTypesWithSerializers
-import io.imotions.bson4k.common.InstantSerializer
-import io.imotions.bson4k.common.ObjectIdSerializer
-import io.imotions.bson4k.common.UUIDSerializer
+import io.imotions.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -49,6 +46,22 @@ class BsonTest : StringSpec({
         val deserialized = mappingBson.decodeFromBsonDocument<BsonTypesWithSerializers>(doc)
 
         deserialized shouldBe clazz.copy(date = Instant.ofEpochMilli(clazz.date.toEpochMilli()))
+    }
+
+    "Type mapping should apply to only serializers with matching serial name" {
+        val mappingBson = Bson {
+            addTypeMapping(UUIDSerializer, BsonKind.UUID)
+        }
+        val clazz = BsonSingleTypeWithSerializer(UUID.randomUUID(), "some", "things")
+
+        val doc = mappingBson.encodeToBsonDocument(clazz).also { println(it) }
+
+        doc["uuid"]?.bsonType shouldBe BsonType.BINARY
+        doc["x"]?.bsonType shouldBe BsonType.STRING
+
+        val deserialized = mappingBson.decodeFromBsonDocument<BsonSingleTypeWithSerializer>(doc)
+
+        deserialized shouldBe clazz
     }
 
     "Adding an invalid type mapping in the builder should throw" {

@@ -4,8 +4,8 @@ import io.imotions.bson4k.BsonConf
 import io.imotions.bson4k.BsonKind
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.PolymorphicKind
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
 import kotlinx.serialization.encoding.AbstractEncoder
@@ -84,13 +84,14 @@ class BsonEncoder(
             descriptor.kind is StructureKind.OBJECT -> writer.writeName(descriptor.getElementName(index))
             descriptor.kind is PolymorphicKind && (descriptor.getElementName(index) == "type") ->
                 writer.writeName(conf.classDiscriminator)
+            descriptor.kind is PrimitiveKind ->
+                println(descriptor.serialName)
         }
-        return true
-    }
 
-    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        useMapper = conf.bsonTypeMappings.getOrDefault(serializer.descriptor.serialName, BsonKind.PASS_THROUGH)
-        super.encodeSerializableValue(serializer, value)
+        useMapper =
+            conf.bsonTypeMappings.getOrDefault(descriptor.getElementDescriptor(index).serialName, BsonKind.PASS_THROUGH)
+
+        return true
     }
 
     override fun encodeString(value: String) {

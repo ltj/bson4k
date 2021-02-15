@@ -60,3 +60,10 @@ data class BsonTypesWithSerializers(
     @Serializable(with = InstantSerializer::class) val date: Instant,
     @Serializable(with = ObjectIdSerializer::class) val objectId: ObjectId
 )
+
+@Serializable
+data class BsonSingleTypeWithSerializer(
+    @Serializable(with = UUIDSerializer::class) val uuid: UUID,
+    val x: String,
+    val y: String
+)
