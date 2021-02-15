@@ -34,11 +34,9 @@ class BsonTest : StringSpec({
 
     "Type mappings should map primitive types to bson types on encoding and decoding" {
         val mappingBson = Bson {
-            bsonTypeMappings = mapOf(
-                UUIDSerializer.descriptor.serialName to BsonTypeMapping.UUID,
-                InstantSerializer.descriptor.serialName to BsonTypeMapping.DATE,
-                ObjectIdSerializer.descriptor.serialName to BsonTypeMapping.OBJECT_ID
-            )
+            addTypeMapping(UUIDSerializer, BsonKind.UUID)
+            addTypeMapping(InstantSerializer, BsonKind.DATE)
+            addTypeMapping(ObjectIdSerializer, BsonKind.OBJECT_ID)
         }
         val clazz = BsonTypesWithSerializers(UUID.randomUUID(), Instant.now(), ObjectId.get())
 
@@ -51,5 +49,13 @@ class BsonTest : StringSpec({
         val deserialized = mappingBson.decodeFromBsonDocument<BsonTypesWithSerializers>(doc)
 
         deserialized shouldBe clazz.copy(date = Instant.ofEpochMilli(clazz.date.toEpochMilli()))
+    }
+
+    "Adding an invalid type mapping in the builder should throw" {
+        shouldThrow<java.lang.IllegalArgumentException> {
+            Bson {
+                addTypeMapping(UUIDSerializer, BsonKind.DATE)
+            }
+        }
     }
 })

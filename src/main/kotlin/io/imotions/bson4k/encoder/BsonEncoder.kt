@@ -1,7 +1,7 @@
 package io.imotions.bson4k.encoder
 
 import io.imotions.bson4k.BsonConf
-import io.imotions.bson4k.BsonTypeMapping
+import io.imotions.bson4k.BsonKind
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.SerializationStrategy
@@ -27,7 +27,7 @@ class BsonEncoder(
 
     private val writer: BsonDocumentWriter = BsonDocumentWriter(BsonDocument())
     private var state = State.ROOT
-    private var useMapper: BsonTypeMapping = BsonTypeMapping.NONE
+    private var useMapper: BsonKind = BsonKind.PASS_THROUGH
 
     val document: BsonDocument
         get() {
@@ -89,14 +89,14 @@ class BsonEncoder(
     }
 
     override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
-        useMapper = conf.bsonTypeMappings.getOrDefault(serializer.descriptor.serialName, BsonTypeMapping.NONE)
+        useMapper = conf.bsonTypeMappings.getOrDefault(serializer.descriptor.serialName, BsonKind.PASS_THROUGH)
         super.encodeSerializableValue(serializer, value)
     }
 
     override fun encodeString(value: String) {
         when (useMapper) {
-            BsonTypeMapping.OBJECT_ID -> encodeBsonObjectId(value)
-            BsonTypeMapping.UUID -> encodeUUID(value)
+            BsonKind.OBJECT_ID -> encodeBsonObjectId(value)
+            BsonKind.UUID -> encodeUUID(value)
             else -> encodeBsonElement(value, writer::writeString)
         }
     }
@@ -118,7 +118,7 @@ class BsonEncoder(
 
     override fun encodeLong(value: Long) {
         when (useMapper) {
-            BsonTypeMapping.DATE -> encodeBsonDateTime(value)
+            BsonKind.DATE -> encodeBsonDateTime(value)
             else -> encodeBsonElement(value, writer::writeInt64)
         }
     }

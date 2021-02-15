@@ -1,7 +1,7 @@
 package io.imotions.bson4k.decoder
 
 import io.imotions.bson4k.BsonConf
-import io.imotions.bson4k.BsonTypeMapping
+import io.imotions.bson4k.BsonKind
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
@@ -31,7 +31,7 @@ class BsonDecoder(
     private var stateStack = ArrayDeque<Pair<DecoderState, Int>>()
     private var state = DecoderState.DOCUMENT
     private var currentIndex = -1
-    private var useMapper: BsonTypeMapping = BsonTypeMapping.NONE
+    private var useMapper: BsonKind = BsonKind.PASS_THROUGH
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         return when (state) {
@@ -75,7 +75,7 @@ class BsonDecoder(
     }
 
     override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>, previousValue: T?): T {
-        useMapper = conf.bsonTypeMappings.getOrDefault(deserializer.descriptor.serialName, BsonTypeMapping.NONE)
+        useMapper = conf.bsonTypeMappings.getOrDefault(deserializer.descriptor.serialName, BsonKind.PASS_THROUGH)
         return super.decodeSerializableValue(deserializer, previousValue)
     }
 
@@ -136,7 +136,7 @@ class BsonDecoder(
     override fun decodeInt(): Int = decodeBsonElement(reader::readInt32, String::toInt)
 
     override fun decodeLong(): Long = when (useMapper) {
-        BsonTypeMapping.DATE -> decodeBsonDateTime()
+        BsonKind.DATE -> decodeBsonDateTime()
         else -> decodeBsonElement(reader::readInt64, String::toLong)
     }
 
@@ -151,8 +151,8 @@ class BsonDecoder(
     override fun decodeShort(): Short = decodeInt().toShort()
 
     override fun decodeString(): String = when (useMapper) {
-        BsonTypeMapping.UUID -> decodeUUID().toString()
-        BsonTypeMapping.OBJECT_ID -> decodeBsonObjectId()
+        BsonKind.UUID -> decodeUUID().toString()
+        BsonKind.OBJECT_ID -> decodeBsonObjectId()
         else -> decodeBsonElement(reader::readString) { it }
     }
 

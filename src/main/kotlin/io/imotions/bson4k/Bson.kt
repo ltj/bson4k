@@ -3,6 +3,7 @@ package io.imotions.bson4k
 import io.imotions.bson4k.decoder.BsonDecoder
 import io.imotions.bson4k.encoder.BsonEncoder
 import kotlinx.serialization.*
+import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.modules.SerializersModule
 import org.bson.BsonDocument
 import org.bson.BsonDocumentReader
@@ -50,7 +51,14 @@ fun Bson(builderAction: BsonBuilder.() -> Unit): Bson {
 class BsonBuilder internal constructor(conf: BsonConf) {
     var classDiscriminator = conf.classDiscriminator
     var serializersModule = conf.serializersModule
-    var bsonTypeMappings = conf.bsonTypeMappings
+    internal val bsonTypeMappings = conf.bsonTypeMappings.toMutableMap()
+
+    fun addTypeMapping(serializer: KSerializer<*>, bsonKind: BsonKind) {
+        require(serializer.descriptor.kind in bsonKind.supportedKinds) {
+            "Mapping to and from ${serializer.descriptor.kind} is not supported by $bsonKind"
+        }
+        bsonTypeMappings.put(serializer.descriptor.serialName, bsonKind)
+    }
 
     fun build(): BsonConf {
         require(!classDiscriminator.contains("""[$.]""".toRegex())) {
@@ -64,9 +72,9 @@ class BsonBuilder internal constructor(conf: BsonConf) {
     }
 }
 
-enum class BsonTypeMapping {
-    NONE,
-    DATE,
-    OBJECT_ID,
-    UUID
+enum class BsonKind(val supportedKinds: List<PrimitiveKind>) {
+    PASS_THROUGH(emptyList()),
+    DATE(listOf(PrimitiveKind.LONG)),
+    OBJECT_ID(listOf(PrimitiveKind.STRING)),
+    UUID(listOf(PrimitiveKind.STRING))
 }
