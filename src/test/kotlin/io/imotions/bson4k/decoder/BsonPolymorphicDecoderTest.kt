@@ -4,9 +4,11 @@ import io.imotions.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import org.bson.Document
 
+@ExperimentalSerializationApi
 class BsonPolymorphicDecoderTest : StringSpec({
     "Decode polymorphic type" {
         val doc = Document(CLASS_DISCRIMINATOR, SealedClass.PolyOne::class.qualifiedName)

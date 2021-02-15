@@ -35,7 +35,7 @@ class BsonCollectionEncoderTest : StringSpec({
             CollectionWrapper(listOf(12, 34, 56)),
             CollectionWrapper(listOf(78, 90))
         )
-        val document = bson.encodeToBsonDocument(CollectionWrapper(list))
+        bson.encodeToBsonDocument(CollectionWrapper(list))
             .also { println(it) }
     }
 
@@ -44,6 +44,6 @@ class BsonCollectionEncoderTest : StringSpec({
             listOf('a', 'b', 'c'),
             listOf('d')
         )
-        val document = bson.encodeToBsonDocument(CollectionWrapper(lists)).also { println(it) }
+        bson.encodeToBsonDocument(CollectionWrapper(lists)).also { println(it) }
     }
 })

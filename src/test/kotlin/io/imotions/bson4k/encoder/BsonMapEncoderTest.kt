@@ -26,7 +26,7 @@ class BsonMapEncoderTest : StringSpec({
             20 to Wrapper2("cde", Wrapper(123.45F))
         )
 
-        val document = bson.encodeToBsonDocument(map)
+        bson.encodeToBsonDocument(map)
             .also { println(it.toJson()) }
     }
 
@@ -36,7 +36,7 @@ class BsonMapEncoderTest : StringSpec({
             20 to Wrapper2("cde", Wrapper(123.45F))
         )
         val wrapper = MapWrapper(map)
-        val document = bson.encodeToBsonDocument(wrapper)
+        bson.encodeToBsonDocument(wrapper)
             .also { println(it.toJson()) }
     }
 })
