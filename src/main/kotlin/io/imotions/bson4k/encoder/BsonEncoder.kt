@@ -1,7 +1,10 @@
 package io.imotions.bson4k.encoder
 
+import io.imotions.bson4k.BsonConf
+import io.imotions.bson4k.BsonTypeMapping
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.SerializationStrategy
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
@@ -11,15 +14,20 @@ import kotlinx.serialization.modules.SerializersModule
 import org.bson.BsonBinary
 import org.bson.BsonDocument
 import org.bson.BsonDocumentWriter
+import org.bson.UuidRepresentation
+import org.bson.types.ObjectId
+import java.util.*
 
 @ExperimentalSerializationApi
 class BsonEncoder(
-    override val serializersModule: SerializersModule
+    private val conf: BsonConf
 ) : AbstractEncoder() {
-    val classDiscriminator = "__type"
+    override val serializersModule: SerializersModule
+        get() = conf.serializersModule
 
     private val writer: BsonDocumentWriter = BsonDocumentWriter(BsonDocument())
     private var state = State.ROOT
+    private var useMapper: BsonTypeMapping = BsonTypeMapping.NONE
 
     val document: BsonDocument
         get() {
@@ -75,12 +83,23 @@ class BsonEncoder(
             }
             descriptor.kind is StructureKind.OBJECT -> writer.writeName(descriptor.getElementName(index))
             descriptor.kind is PolymorphicKind && (descriptor.getElementName(index) == "type") ->
-                writer.writeName(classDiscriminator)
+                writer.writeName(conf.classDiscriminator)
         }
         return true
     }
 
-    override fun encodeString(value: String) = encodeBsonElement(value, writer::writeString)
+    override fun <T> encodeSerializableValue(serializer: SerializationStrategy<T>, value: T) {
+        useMapper = conf.bsonTypeMappings.getOrDefault(serializer.descriptor.serialName, BsonTypeMapping.NONE)
+        super.encodeSerializableValue(serializer, value)
+    }
+
+    override fun encodeString(value: String) {
+        when (useMapper) {
+            BsonTypeMapping.OBJECT_ID -> encodeBsonObjectId(value)
+            BsonTypeMapping.UUID -> encodeUUID(value)
+            else -> encodeBsonElement(value, writer::writeString)
+        }
+    }
 
     override fun encodeInt(value: Int) = encodeBsonElement(value, writer::writeInt32)
 
@@ -97,7 +116,12 @@ class BsonEncoder(
 
     override fun encodeFloat(value: Float) = encodeDouble(value.toDouble())
 
-    override fun encodeLong(value: Long) = encodeBsonElement(value, writer::writeInt64)
+    override fun encodeLong(value: Long) {
+        when (useMapper) {
+            BsonTypeMapping.DATE -> encodeBsonDateTime(value)
+            else -> encodeBsonElement(value, writer::writeInt64)
+        }
+    }
 
     override fun encodeNull() = writer.writeNull()
 
@@ -105,12 +129,15 @@ class BsonEncoder(
 
     fun encodeByteArray(value: ByteArray) = encodeBsonElement(BsonBinary(value), writer::writeBinaryData)
 
-    /**
-     * Encodes date from a value representing ms since epoch
-     */
-    fun encodeDate(value: Long) {
-        encodeBsonElement(value, writer::writeDateTime)
-    }
+    fun encodeBsonDateTime(value: Long) = encodeBsonElement(value, writer::writeDateTime)
+
+    fun encodeBsonObjectId(value: String) = encodeBsonElement(ObjectId(value), writer::writeObjectId)
+
+    fun encodeUUID(uuid: UUID, representation: UuidRepresentation = UuidRepresentation.STANDARD) =
+        encodeBsonElement(BsonBinary(uuid, representation), writer::writeBinaryData)
+
+    fun encodeUUID(uuid: String, representation: UuidRepresentation = UuidRepresentation.STANDARD) =
+        encodeUUID(UUID.fromString(uuid), representation)
 
     private fun <T> encodeBsonElement(value: T, writeOps: (T) -> Unit) {
         when (state) {

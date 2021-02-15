@@ -14,7 +14,7 @@ class Bson(val configuration: BsonConf) : SerialFormat, StringFormat {
         get() = configuration.serializersModule
 
     fun <T> encodeToBsonDocument(serializer: SerializationStrategy<T>, value: T): BsonDocument {
-        val encoder = BsonEncoder(serializersModule)
+        val encoder = BsonEncoder(configuration)
         encoder.encodeSerializableValue(serializer, value)
         return encoder.document
     }
@@ -23,7 +23,7 @@ class Bson(val configuration: BsonConf) : SerialFormat, StringFormat {
 
     fun <T> decodeFromBsonDocument(deserializer: DeserializationStrategy<T>, document: BsonDocument): T {
         val reader = BsonDocumentReader(document)
-        val decoder = BsonDecoder(reader, serializersModule)
+        val decoder = BsonDecoder(reader, configuration)
         return decoder.decodeSerializableValue(deserializer)
     }
 
@@ -50,6 +50,7 @@ fun Bson(builderAction: BsonBuilder.() -> Unit): Bson {
 class BsonBuilder internal constructor(conf: BsonConf) {
     var classDiscriminator = conf.classDiscriminator
     var serializersModule = conf.serializersModule
+    var bsonTypeMappings = conf.bsonTypeMappings
 
     fun build(): BsonConf {
         require(!classDiscriminator.contains("""[$.]""".toRegex())) {
@@ -57,7 +58,15 @@ class BsonBuilder internal constructor(conf: BsonConf) {
         }
         return BsonConf(
             classDiscriminator = classDiscriminator,
-            serializersModule = serializersModule
+            serializersModule = serializersModule,
+            bsonTypeMappings = bsonTypeMappings
         )
     }
+}
+
+enum class BsonTypeMapping {
+    NONE,
+    DATE,
+    OBJECT_ID,
+    UUID
 }

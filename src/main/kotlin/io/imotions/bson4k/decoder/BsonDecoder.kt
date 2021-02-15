@@ -1,5 +1,8 @@
 package io.imotions.bson4k.decoder
 
+import io.imotions.bson4k.BsonConf
+import io.imotions.bson4k.BsonTypeMapping
+import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PolymorphicKind
@@ -11,17 +14,24 @@ import kotlinx.serialization.encoding.CompositeDecoder.Companion.DECODE_DONE
 import kotlinx.serialization.modules.SerializersModule
 import org.bson.AbstractBsonReader
 import org.bson.AbstractBsonReader.State.*
+import org.bson.BsonBinary
 import org.bson.BsonType
+import org.bson.types.ObjectId
+import java.util.*
+import kotlin.collections.ArrayDeque
 
 @ExperimentalSerializationApi
 class BsonDecoder(
     private val reader: AbstractBsonReader,
-    override val serializersModule: SerializersModule
+    private val conf: BsonConf
 ) : AbstractDecoder() {
-    val classDiscriminator = "__type"
+    override val serializersModule: SerializersModule
+        get() = conf.serializersModule
+
     private var stateStack = ArrayDeque<Pair<DecoderState, Int>>()
     private var state = DecoderState.DOCUMENT
     private var currentIndex = -1
+    private var useMapper: BsonTypeMapping = BsonTypeMapping.NONE
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         return when (state) {
@@ -49,11 +59,11 @@ class BsonDecoder(
                         if (reader.state == TYPE) {
                             reader.readBsonType()
                         }
-                        if (reader.readName() == classDiscriminator) {
+                        if (reader.readName() == conf.classDiscriminator) {
                             currentIndex++
                         } else {
                             throw SerializationException(
-                                "Unknown class discriminator. Expected \"$classDiscriminator\""
+                                "Unknown class discriminator. Expected \"${conf.classDiscriminator}\""
                             )
                         }
                     }
@@ -62,6 +72,11 @@ class BsonDecoder(
                 }
             }
         }
+    }
+
+    override fun <T> decodeSerializableValue(deserializer: DeserializationStrategy<T>, previousValue: T?): T {
+        useMapper = conf.bsonTypeMappings.getOrDefault(deserializer.descriptor.serialName, BsonTypeMapping.NONE)
+        return super.decodeSerializableValue(deserializer, previousValue)
     }
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeDecoder {
@@ -120,7 +135,10 @@ class BsonDecoder(
 
     override fun decodeInt(): Int = decodeBsonElement(reader::readInt32, String::toInt)
 
-    override fun decodeLong(): Long = decodeBsonElement(reader::readInt64, String::toLong)
+    override fun decodeLong(): Long = when (useMapper) {
+        BsonTypeMapping.DATE -> decodeBsonDateTime()
+        else -> decodeBsonElement(reader::readInt64, String::toLong)
+    }
 
     override fun decodeNull(): Nothing? = decodeBsonElement(
         {
@@ -132,10 +150,31 @@ class BsonDecoder(
 
     override fun decodeShort(): Short = decodeInt().toShort()
 
-    override fun decodeString(): String = decodeBsonElement(reader::readString) { it }
+    override fun decodeString(): String = when (useMapper) {
+        BsonTypeMapping.UUID -> decodeUUID().toString()
+        BsonTypeMapping.OBJECT_ID -> decodeBsonObjectId()
+        else -> decodeBsonElement(reader::readString) { it }
+    }
 
     override fun decodeEnum(enumDescriptor: SerialDescriptor): Int =
         enumDescriptor.getElementIndex(decodeString())
+
+    fun decodeByteArray(): ByteArray {
+        val binary = decodeBsonElement(reader::readBinaryData) { BsonBinary(it.toByteArray()) }
+        return binary.data
+    }
+
+    fun decodeBsonDateTime(): Long = decodeBsonElement(reader::readDateTime, String::toLong)
+
+    fun decodeBsonObjectId(): String {
+        val objectId = decodeBsonElement(reader::readObjectId) { ObjectId(it) }
+        return objectId.toHexString()
+    }
+
+    fun decodeUUID(): UUID {
+        val binary = decodeBsonElement(reader::readBinaryData) { BsonBinary(it.toByteArray()) }
+        return binary.asUuid()
+    }
 
     private fun <T> decodeBsonElement(readOps: () -> T, fromString: (String) -> T): T {
         if (reader.state == INITIAL) {

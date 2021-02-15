@@ -1,6 +1,9 @@
 package io.imotions.bson4k.common
 
 import kotlinx.serialization.Serializable
+import org.bson.types.ObjectId
+import java.time.Instant
+import java.util.*
 
 // Polymorphic types
 
@@ -48,3 +51,12 @@ enum class EnumClass {
     THIRD,
     FOURTH
 }
+
+// Type mapping
+
+@Serializable
+data class BsonTypesWithSerializers(
+    @Serializable(with = UUIDSerializer::class) val uuid: UUID,
+    @Serializable(with = InstantSerializer::class) val date: Instant,
+    @Serializable(with = ObjectIdSerializer::class) val objectId: ObjectId
+)

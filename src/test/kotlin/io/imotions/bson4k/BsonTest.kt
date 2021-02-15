@@ -1,11 +1,18 @@
 package io.imotions.bson4k
 
+import io.imotions.bson4k.common.BsonTypesWithSerializers
+import io.imotions.bson4k.common.InstantSerializer
+import io.imotions.bson4k.common.ObjectIdSerializer
+import io.imotions.bson4k.common.UUIDSerializer
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
-import java.lang.IllegalArgumentException
+import org.bson.BsonType
+import org.bson.types.ObjectId
+import java.time.Instant
+import java.util.*
 
 @ExperimentalSerializationApi
 class BsonTest : StringSpec({
@@ -23,5 +30,26 @@ class BsonTest : StringSpec({
         shouldThrow<IllegalArgumentException> {
             Bson { classDiscriminator = "type.." }
         }
+    }
+
+    "Type mappings should map primitive types to bson types on encoding and decoding" {
+        val mappingBson = Bson {
+            bsonTypeMappings = mapOf(
+                UUIDSerializer.descriptor.serialName to BsonTypeMapping.UUID,
+                InstantSerializer.descriptor.serialName to BsonTypeMapping.DATE,
+                ObjectIdSerializer.descriptor.serialName to BsonTypeMapping.OBJECT_ID
+            )
+        }
+        val clazz = BsonTypesWithSerializers(UUID.randomUUID(), Instant.now(), ObjectId.get())
+
+        val doc = mappingBson.encodeToBsonDocument(clazz).also { println(it) }
+
+        doc["uuid"]?.bsonType shouldBe BsonType.BINARY
+        doc["date"]?.bsonType shouldBe BsonType.DATE_TIME
+        doc["objectId"]?.bsonType shouldBe BsonType.OBJECT_ID
+
+        val deserialized = mappingBson.decodeFromBsonDocument<BsonTypesWithSerializers>(doc)
+
+        deserialized shouldBe clazz.copy(date = Instant.ofEpochMilli(clazz.date.toEpochMilli()))
     }
 })
