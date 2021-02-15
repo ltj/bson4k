@@ -2,10 +2,13 @@ plugins {
     kotlin("jvm") version "1.4.30"
     kotlin("plugin.serialization") version "1.4.30"
     `maven-publish`
+    id("io.gitlab.arturbosch.detekt").version("1.16.0-RC1")
 }
 
 group = "io.imotions.bson4k"
 version = "1.0-SNAPSHOT"
+
+val ktlint by configurations.creating
 
 repositories {
     jcenter()
@@ -13,6 +16,8 @@ repositories {
 }
 
 dependencies {
+    ktlint("com.pinterest:ktlint:0.40.0")
+
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
     implementation("org.mongodb:bson:4.2.0")
 
@@ -54,4 +59,32 @@ publishing {
             artifact(sourcesJar.get())
         }
     }
+}
+
+// Ktlint
+val outputDir = "${project.buildDir}/reports/ktlint/"
+val inputFiles = project.fileTree(mapOf("dir" to "src", "include" to "**/*.kt"))
+
+val ktlintCheck by tasks.registering(JavaExec::class) {
+    inputs.files(inputFiles)
+    outputs.dir(outputDir)
+
+    description = "Check Kotlin code style."
+    classpath = ktlint
+    main = "com.pinterest.ktlint.Main"
+    args = listOf("--disabled_rules=no-wildcard-imports", "src/**/*.kt")
+}
+
+val ktlintFormat by tasks.registering(JavaExec::class) {
+    inputs.files(inputFiles)
+    outputs.dir(outputDir)
+
+    description = "Fix Kotlin code style deviations."
+    classpath = ktlint
+    main = "com.pinterest.ktlint.Main"
+    args = listOf("-F", "--disabled_rules=no-wildcard-imports", "src/**/*.kt")
+}
+
+tasks.detekt {
+    dependsOn("ktlintCheck")
 }

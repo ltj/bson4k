@@ -29,7 +29,8 @@ class BsonPolymorphicDecoderTest : StringSpec({
 
     "Decode wrapped polymorphic type" {
         val doc = Document(
-            "value", Document(
+            "value",
+            Document(
                 CLASS_DISCRIMINATOR,
                 SealedClass.PolyTwo::class.qualifiedName
             )
@@ -47,7 +48,8 @@ class BsonPolymorphicDecoderTest : StringSpec({
             SealedClass.PolyTwo("text")
         )
         val doc = Document(
-            "collection", listOf(
+            "collection",
+            listOf(
                 Document(CLASS_DISCRIMINATOR, SealedClass.PolyOne::class.qualifiedName)
                     .append("value", 42),
                 Document(CLASS_DISCRIMINATOR, SealedClass.PolyTwo::class.qualifiedName)

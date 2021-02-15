@@ -13,7 +13,6 @@ class BsonPolymorphicEncoderTest : StringSpec({
         val document = bson.encodeToBsonDocument(SealedClass.serializer(), polyClass)
             .also { println(it.toJson()) }
 
-
         val serialized = json.decodeFromString(SealedClass.serializer(), document.toJson())
         document.firstKey shouldBe CLASS_DISCRIMINATOR
         serialized shouldBe polyClass

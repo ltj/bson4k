@@ -37,8 +37,6 @@ class Bson(val configuration: BsonConf) : SerialFormat, StringFormat {
     override fun <T> encodeToString(serializer: SerializationStrategy<T>, value: T): String {
         return encodeToBsonDocument(serializer, value).toJson()
     }
-
-
 }
 
 @ExperimentalSerializationApi
@@ -54,8 +52,9 @@ class BsonBuilder internal constructor(conf: BsonConf) {
     var serializersModule = conf.serializersModule
 
     fun build(): BsonConf {
-        require(!classDiscriminator.contains("""[$.]""".toRegex()))
-        { "Class discriminator cannot contain illegal BSON field characters: [$.]" }
+        require(!classDiscriminator.contains("""[$.]""".toRegex())) {
+            "Class discriminator cannot contain illegal BSON field characters: [$.]"
+        }
         return BsonConf(
             classDiscriminator = classDiscriminator,
             serializersModule = serializersModule

@@ -66,7 +66,6 @@ class BsonEncoder(
         }
     }
 
-
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         when {
             descriptor.kind is StructureKind.CLASS -> writer.writeName(descriptor.getElementName(index))

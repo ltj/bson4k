@@ -8,7 +8,7 @@ import kotlinx.serialization.modules.EmptySerializersModule
 import java.lang.IllegalArgumentException
 
 @ExperimentalSerializationApi
-class BsonTest: StringSpec({
+class BsonTest : StringSpec({
     "Builder should return Bson with default configuration" {
         val bson = Bson { }
         bson.configuration.classDiscriminator shouldBe CLASS_DISCRIMINATOR
@@ -21,7 +21,7 @@ class BsonTest: StringSpec({
         }
 
         shouldThrow<IllegalArgumentException> {
-            Bson { classDiscriminator = "type.."}
+            Bson { classDiscriminator = "type.." }
         }
     }
 })

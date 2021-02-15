@@ -52,7 +52,9 @@ class BsonDecoder(
                         if (reader.readName() == classDiscriminator) {
                             currentIndex++
                         } else {
-                            throw SerializationException("Unknown class discriminator. Expected \"$classDiscriminator\"")
+                            throw SerializationException(
+                                "Unknown class discriminator. Expected \"$classDiscriminator\""
+                            )
                         }
                     }
                     1 -> currentIndex++

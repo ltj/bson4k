@@ -40,7 +40,8 @@ class BsonMapDecoderTest : StringSpec({
             20 to Wrapper(123.45F)
         )
         val document = Document(
-            "map", Document()
+            "map",
+            Document()
                 .append("10", Document("value", 42.5F))
                 .append("20", Document("value", 123.45F))
         ).toBsonDocument()

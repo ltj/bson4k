@@ -1,6 +1,5 @@
 package io.imotions.bson4k.common
 
-import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.Serializable
 
 // Polymorphic types

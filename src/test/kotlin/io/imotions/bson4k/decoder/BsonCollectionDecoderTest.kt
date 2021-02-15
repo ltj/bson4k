@@ -1,7 +1,7 @@
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.common.Wrapper
 import io.imotions.bson4k.common.CollectionWrapper
+import io.imotions.bson4k.common.Wrapper
 import io.imotions.bson4k.common.bson
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
@@ -39,7 +39,8 @@ class BsonCollectionDecoderTest : StringSpec({
 
     "Decode collection of objects with collections" {
         val document = Document(
-            "collection", listOf(
+            "collection",
+            listOf(
                 Document("collection", list.map { Document("value", it.toString()) }),
                 Document("collection", list.map { Document("value", it.toString()) })
             )

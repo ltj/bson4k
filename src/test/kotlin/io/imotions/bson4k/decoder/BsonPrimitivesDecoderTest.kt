@@ -1,7 +1,7 @@
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.common.Wrapper
 import io.imotions.bson4k.common.VALUE_KEY
+import io.imotions.bson4k.common.Wrapper
 import io.imotions.bson4k.common.bson
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
