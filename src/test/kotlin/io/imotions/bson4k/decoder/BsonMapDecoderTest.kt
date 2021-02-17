@@ -1,12 +1,16 @@
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.common.MapWrapper
-import io.imotions.bson4k.common.Wrapper
-import io.imotions.bson4k.common.bson
+import io.imotions.bson4k.Bson
+import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.MapSerializer
+import org.bson.BsonBinary
 import org.bson.Document
+import org.bson.UuidRepresentation
+import java.util.*
 
 @ExperimentalSerializationApi
 class BsonMapDecoderTest : StringSpec({
@@ -49,5 +53,43 @@ class BsonMapDecoderTest : StringSpec({
 
         val deserialized = bson.decodeFromBsonDocument<MapWrapper<Int, Wrapper<Float>>>(document)
         deserialized shouldBe MapWrapper(map)
+    }
+
+    "Decode to map with non-primitive keys" {
+        val doc = Document(UUID.randomUUID().toString(), Document("uuid", UUID.randomUUID().toString()))
+            .append(UUID.randomUUID().toString(), Document("uuid", UUID.randomUUID().toString()))
+
+        bson.decodeFromBsonDocument(
+            MapSerializer(
+                UUIDSerializer,
+                StringUUIDContainer.serializer()
+            ),
+            doc.toBsonDocument()
+        )
+    }
+
+    "Decode to map with non-primitive keys and type mapping" {
+        val mappingBson = Bson {
+            addTypeMapping(UUIDSerializer, BsonKind.UUID)
+        }
+        val doc = Document(
+            UUID.randomUUID().toString(),
+            Document("uuid", BsonBinary(UUID.randomUUID(), UuidRepresentation.STANDARD))
+        )
+            .append(
+                UUID.randomUUID().toString(),
+                Document(
+                    "uuid", BsonBinary(UUID.randomUUID(), UuidRepresentation.STANDARD)
+                )
+            )
+            .also { println(it) }
+
+        mappingBson.decodeFromBsonDocument(
+            MapSerializer(
+                UUIDSerializer,
+                StringUUIDContainer.serializer()
+            ),
+            doc.toBsonDocument()
+        )
     }
 })

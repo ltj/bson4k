@@ -31,7 +31,7 @@ class BsonDecoder(
     private var stateStack = ArrayDeque<Pair<DecoderState, Int>>()
     private var state = DecoderState.DOCUMENT
     private var currentIndex = -1
-    private var useMapper: BsonKind = BsonKind.PASS_THROUGH
+    private var useMapper: BsonKind? = null
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
         val idx = when (state) {
@@ -74,8 +74,13 @@ class BsonDecoder(
             }
         }
 
-        if (idx >= 0) useMapper =
-            conf.bsonTypeMappings.getOrDefault(descriptor.getElementDescriptor(idx).serialName, BsonKind.PASS_THROUGH)
+        if (idx >= 0) {
+            useMapper = if (state == DecoderState.MAP_KEY) {
+                null // Don't return a mapped type as key
+            } else {
+                conf.bsonTypeMappings[descriptor.getElementDescriptor(idx).serialName]
+            }
+        }
 
         return idx
     }
@@ -180,14 +185,14 @@ class BsonDecoder(
         return binary.asUuid()
     }
 
-    private fun <T> decodeBsonElement(readOps: () -> T, fromString: (String) -> T): T {
+    private fun <T> decodeBsonElement(readOps: () -> T, parse: (String) -> T): T {
         if (reader.state == INITIAL) {
             throw SerializationException("Bson document cannot be decoded to a primitive type")
         }
         return when (state) {
             DecoderState.MAP_KEY -> {
                 state = DecoderState.MAP_VALUE
-                fromString(reader.readName())
+                parse(reader.readName())
             }
             DecoderState.MAP_VALUE -> {
                 state = DecoderState.MAP_KEY

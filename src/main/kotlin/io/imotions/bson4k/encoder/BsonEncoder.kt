@@ -28,7 +28,7 @@ class BsonEncoder(
 
     private val writer: BsonDocumentWriter = BsonDocumentWriter(BsonDocument())
     private var state = State.ROOT
-    private var useMapper: BsonKind = BsonKind.PASS_THROUGH
+    private var useMapper: BsonKind? = null
 
     val document: BsonDocument
         get() {
@@ -90,7 +90,7 @@ class BsonEncoder(
         }
 
         useMapper =
-            conf.bsonTypeMappings.getOrDefault(descriptor.getElementDescriptor(index).serialName, BsonKind.PASS_THROUGH)
+            conf.bsonTypeMappings[descriptor.getElementDescriptor(index).serialName]
 
         return true
     }
@@ -142,15 +142,15 @@ class BsonEncoder(
     fun encodeBsonObjectId(value: String) = encodeBsonElement(ObjectId(value), writer::writeObjectId)
 
     fun encodeUUID(uuid: UUID, representation: UuidRepresentation = UuidRepresentation.STANDARD) =
-        encodeBsonElement(BsonBinary(uuid, representation), writer::writeBinaryData)
+        encodeBsonElement(BsonBinary(uuid, representation), writer::writeBinaryData) { uuid.toString() }
 
     fun encodeUUID(uuid: String, representation: UuidRepresentation = UuidRepresentation.STANDARD) =
         encodeUUID(UUID.fromString(uuid), representation)
 
-    private fun <T> encodeBsonElement(value: T, writeOps: (T) -> Unit) {
+    private fun <T : Any> encodeBsonElement(value: T, writeOps: (T) -> Unit, asString: T.() -> String = Any::toString) {
         when (state) {
             State.ROOT -> throw SerializationException("Top-level primitives are not allowed.")
-            State.MAP_KEY -> writer.writeName(value.toString())
+            State.MAP_KEY -> writer.writeName(value.asString())
             else -> writeOps(value)
         }
     }

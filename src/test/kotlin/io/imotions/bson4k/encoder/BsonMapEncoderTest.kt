@@ -1,14 +1,15 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.common.MapWrapper
-import io.imotions.bson4k.common.Wrapper
-import io.imotions.bson4k.common.Wrapper2
-import io.imotions.bson4k.common.bson
+import io.imotions.bson4k.Bson
+import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.builtins.MapSerializer
 import org.bson.BsonInt32
+import java.util.*
 
 @ExperimentalSerializationApi
 class BsonMapEncoderTest : StringSpec({
@@ -38,5 +39,30 @@ class BsonMapEncoderTest : StringSpec({
         val wrapper = MapWrapper(map)
         bson.encodeToBsonDocument(wrapper)
             .also { println(it.toJson()) }
+    }
+
+    "Encode map with non-primitive keys" {
+        val map = mapOf(
+            UUID.randomUUID() to StringUUIDContainer(UUID.randomUUID()),
+            UUID.randomUUID() to StringUUIDContainer(UUID.randomUUID())
+        )
+        val doc = bson.encodeToBsonDocument(MapSerializer(UUIDSerializer, StringUUIDContainer.serializer()), map)
+            .also { println(it) }
+
+        doc.keys shouldContainAll map.keys.map { it.toString() }
+    }
+
+    "Encode map with non-primitive keys using type mapping" {
+        val mappingBson = Bson {
+            addTypeMapping(UUIDSerializer, BsonKind.UUID)
+        }
+        val map = mapOf(
+            UUID.randomUUID() to StringUUIDContainer(UUID.randomUUID()),
+            UUID.randomUUID() to StringUUIDContainer(UUID.randomUUID())
+        )
+        val doc = mappingBson.encodeToBsonDocument(MapSerializer(UUIDSerializer, StringUUIDContainer.serializer()), map)
+            .also { println(it) }
+
+        doc.keys shouldContainAll map.keys.map { it.toString() }
     }
 })
