@@ -1,3 +1,5 @@
+![Build and Test](https://github.com/imotions/bson4k/workflows/Build%20and%20Test/badge.svg)
+
 # BSON 4K
 
 [BSON](http://bsonspec.org/) is a binary Json format native to [MongoDB](https://mongodb.com). BSON4K is an attempt to
@@ -106,9 +108,43 @@ val document = bson.encodeToBsonDocument(user)
 // Output will look like {"id": {"$binary": {"base64": "QGmcyx/LQKauHvFuGMcQDA==", "subType": "04"}}, "name": "Ada"}
 ```
 
-## Type mapping, supported types and `BsonKind`
+## Supported types, type mapping and `BsonKind`
 
-Coming soon.
+### Supported BSON types
+
+| BSON Type | Kotlin/Java Type        |
+| --------- | ----------------------- |
+| Document  | org.bson.Document       |
+| Array     | List                    |
+| Date      | java.time.Instant       |
+| Boolean   | Boolean                 |
+| Double    | Double                  |
+| Int32     | Int                     |
+| Int64     | Long                    |
+| String    | String                  |
+| Binary    | org.bson.types.Binary   |
+| ObjectId  | org.bson.types.ObjectId |
+| Null      | null                    |
+
+### Basic type conversions
+
+| Kotlin Type | BSON Type |
+| ----------- | --------- |
+| Byte        | Int32     |
+| Char        | String    |
+| Short       | Int32     |
+| Float       | Double    |
+
+### Type mappings
+
+Sometimes it is beneficial to use a primitive-kind serializer while still using a more specialized format type. This
+can be achieved via the type mapping feature. The possible target BSON types are specified in the `BsonKind` enum:
+
+| BsonKind | Supported primitive kind(s) | Accepted input -> output    | BSON Type used     |
+| -------- | --------------------------- | --------------------------- | ------------------ |
+| UUID     | String                      | UUID string representation  | Binary UUID type 4 |
+| DATE     | String, Long                | ISO String or Epoch ms Long | Date               |
+| ObjectId | String                      | ObjectId hex String         | ObjectId           |
 
 ## Acknowledgements
 
