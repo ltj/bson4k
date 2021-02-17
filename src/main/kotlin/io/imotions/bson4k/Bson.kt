@@ -74,7 +74,7 @@ class BsonBuilder internal constructor(conf: BsonConf) {
 
 enum class BsonKind(val supportedKinds: List<PrimitiveKind>) {
     PASS_THROUGH(emptyList()),
-    DATE(listOf(PrimitiveKind.LONG)),
+    DATE(listOf(PrimitiveKind.LONG, PrimitiveKind.STRING)),
     OBJECT_ID(listOf(PrimitiveKind.STRING)),
     UUID(listOf(PrimitiveKind.STRING))
 }

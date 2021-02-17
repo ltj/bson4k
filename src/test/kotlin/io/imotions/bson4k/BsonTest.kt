@@ -32,7 +32,7 @@ class BsonTest : StringSpec({
     "Type mappings should map primitive types to bson types on encoding and decoding" {
         val mappingBson = Bson {
             addTypeMapping(UUIDSerializer, BsonKind.UUID)
-            addTypeMapping(InstantSerializer, BsonKind.DATE)
+            addTypeMapping(InstantLongSerializer, BsonKind.DATE)
             addTypeMapping(ObjectIdSerializer, BsonKind.OBJECT_ID)
         }
         val clazz = BsonTypesWithSerializers(UUID.randomUUID(), Instant.now(), ObjectId.get())
@@ -67,7 +67,7 @@ class BsonTest : StringSpec({
     "Adding an invalid type mapping in the builder should throw" {
         shouldThrow<java.lang.IllegalArgumentException> {
             Bson {
-                addTypeMapping(UUIDSerializer, BsonKind.DATE)
+                addTypeMapping(InstantLongSerializer, BsonKind.UUID)
             }
         }
     }

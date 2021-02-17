@@ -16,6 +16,7 @@ import org.bson.AbstractBsonReader.State.*
 import org.bson.BsonBinary
 import org.bson.BsonType
 import org.bson.types.ObjectId
+import java.time.Instant
 import java.util.*
 import kotlin.collections.ArrayDeque
 
@@ -136,7 +137,7 @@ class BsonDecoder(
     override fun decodeInt(): Int = decodeBsonElement(reader::readInt32, String::toInt)
 
     override fun decodeLong(): Long = when (useMapper) {
-        BsonKind.DATE -> decodeBsonDateTime()
+        BsonKind.DATE -> decodeBsonDateTimeToLong()
         else -> decodeBsonElement(reader::readInt64, String::toLong)
     }
 
@@ -153,6 +154,7 @@ class BsonDecoder(
     override fun decodeString(): String = when (useMapper) {
         BsonKind.UUID -> decodeUUID().toString()
         BsonKind.OBJECT_ID -> decodeBsonObjectId()
+        BsonKind.DATE -> decodeBsonDateTimeToString()
         else -> decodeBsonElement(reader::readString) { it }
     }
 
@@ -164,7 +166,9 @@ class BsonDecoder(
         return binary.data
     }
 
-    fun decodeBsonDateTime(): Long = decodeBsonElement(reader::readDateTime, String::toLong)
+    fun decodeBsonDateTimeToLong(): Long = decodeBsonElement(reader::readDateTime, String::toLong)
+
+    fun decodeBsonDateTimeToString(): String = Instant.ofEpochMilli(decodeBsonDateTimeToLong()).toString()
 
     fun decodeBsonObjectId(): String {
         val objectId = decodeBsonElement(reader::readObjectId) { ObjectId(it) }

@@ -1,16 +1,22 @@
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.common.VALUE_KEY
-import io.imotions.bson4k.common.Wrapper
-import io.imotions.bson4k.common.bson
+import io.imotions.bson4k.Bson
+import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
+import io.kotest.property.Arb
+import io.kotest.property.arbitrary.arbitrary
+import io.kotest.property.arbitrary.localDateTime
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import org.bson.*
+import org.bson.types.ObjectId
+import java.time.ZoneOffset
+import java.util.*
 
 private fun assertPrimitiveStructure(document: BsonDocument) {
     document.size shouldBeExactly 1
@@ -96,6 +102,49 @@ class BsonPrimitivesEncoderTest : StringSpec({
 
         assertPrimitiveStructure(document)
         document[VALUE_KEY] shouldBe BsonNull()
+    }
+
+    "Map UUID String to BsonBinary" {
+        val mappingBson = Bson {
+            addTypeMapping(UUIDSerializer, BsonKind.UUID)
+        }
+
+        val uuidGen = arbitrary { UUID.randomUUID() }
+        checkAll(uuidGen) { uuid ->
+            val document = mappingBson.encodeToBsonDocument(StringUUIDContainer(uuid))
+            document["uuid"]?.bsonType shouldBe BsonType.BINARY
+        }
+    }
+
+    "Map Date Long (epoch ms) to BsonDateTime" {
+        val mappingBson = Bson {
+            addTypeMapping(InstantLongSerializer, BsonKind.DATE)
+        }
+
+        checkAll(Arb.localDateTime(1980, 2030)) { i ->
+            val doc = mappingBson.encodeToBsonDocument(LongDateContainer(i.toInstant(ZoneOffset.UTC)))
+            doc["date"]?.bsonType shouldBe BsonType.DATE_TIME
+        }
+    }
+
+    "Map Date String (ISO) to BsonDateTime" {
+        val mappingBson = Bson {
+            addTypeMapping(InstantStringSerializer, BsonKind.DATE)
+        }
+
+        checkAll(Arb.localDateTime(1980, 2030)) { i ->
+            val doc = mappingBson.encodeToBsonDocument(StringDateContainer(i.toInstant(ZoneOffset.UTC)))
+            doc["date"]?.bsonType shouldBe BsonType.DATE_TIME
+        }
+    }
+
+    "Map ObjectId string to ObjectId" {
+        val mappingBson = Bson {
+            addTypeMapping(ObjectIdSerializer, BsonKind.OBJECT_ID)
+        }
+
+        val doc = mappingBson.encodeToBsonDocument(StringObjectIdContainer(ObjectId.get()))
+        doc["objectId"]?.bsonType shouldBe BsonType.OBJECT_ID
     }
 
     "Throw exception when attempting top-level primitives" {

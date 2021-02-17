@@ -16,6 +16,7 @@ import org.bson.BsonDocument
 import org.bson.BsonDocumentWriter
 import org.bson.UuidRepresentation
 import org.bson.types.ObjectId
+import java.time.Instant
 import java.util.*
 
 @ExperimentalSerializationApi
@@ -98,6 +99,7 @@ class BsonEncoder(
         when (useMapper) {
             BsonKind.OBJECT_ID -> encodeBsonObjectId(value)
             BsonKind.UUID -> encodeUUID(value)
+            BsonKind.DATE -> encodeBsonDateTime(value)
             else -> encodeBsonElement(value, writer::writeString)
         }
     }
@@ -131,6 +133,11 @@ class BsonEncoder(
     fun encodeByteArray(value: ByteArray) = encodeBsonElement(BsonBinary(value), writer::writeBinaryData)
 
     fun encodeBsonDateTime(value: Long) = encodeBsonElement(value, writer::writeDateTime)
+
+    fun encodeBsonDateTime(value: String) {
+        val instant = Instant.parse(value)
+        encodeBsonDateTime(instant.toEpochMilli())
+    }
 
     fun encodeBsonObjectId(value: String) = encodeBsonElement(ObjectId(value), writer::writeObjectId)
 

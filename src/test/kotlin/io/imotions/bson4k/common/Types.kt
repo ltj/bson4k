@@ -55,9 +55,29 @@ enum class EnumClass {
 // Type mapping
 
 @Serializable
+data class StringUUIDContainer(
+    @Serializable(with = UUIDSerializer::class) val uuid: UUID
+)
+
+@Serializable
+data class LongDateContainer(
+    @Serializable(with = InstantLongSerializer::class) val date: Instant
+)
+
+@Serializable
+data class StringDateContainer(
+    @Serializable(with = InstantStringSerializer::class) val date: Instant
+)
+
+@Serializable
+data class StringObjectIdContainer(
+    @Serializable(with = ObjectIdSerializer::class) val objectId: ObjectId
+)
+
+@Serializable
 data class BsonTypesWithSerializers(
     @Serializable(with = UUIDSerializer::class) val uuid: UUID,
-    @Serializable(with = InstantSerializer::class) val date: Instant,
+    @Serializable(with = InstantLongSerializer::class) val date: Instant,
     @Serializable(with = ObjectIdSerializer::class) val objectId: ObjectId
 )
 

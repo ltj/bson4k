@@ -30,7 +30,7 @@ object UUIDSerializer : KSerializer<UUID> {
         encoder.encodeString(value.toString())
 }
 
-object InstantSerializer : KSerializer<Instant> {
+object InstantLongSerializer : KSerializer<Instant> {
     override fun deserialize(decoder: Decoder): Instant =
         Instant.ofEpochMilli(decoder.decodeLong())
 
@@ -39,6 +39,17 @@ object InstantSerializer : KSerializer<Instant> {
 
     override fun serialize(encoder: Encoder, value: Instant) =
         encoder.encodeLong(value.toEpochMilli())
+}
+
+object InstantStringSerializer : KSerializer<Instant> {
+    override fun deserialize(decoder: Decoder): Instant =
+        Instant.parse(decoder.decodeString())
+
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("io.imotions.bson4k.instant", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: Instant) =
+        encoder.encodeString(value.toString())
 }
 
 object ObjectIdSerializer : KSerializer<ObjectId> {
