@@ -90,7 +90,11 @@ class BsonEncoder(
         }
 
         useMapper =
-            conf.bsonTypeMappings[descriptor.getElementDescriptor(index).serialName]
+            if (descriptor.getElementDescriptor(index).isNullable) {
+                conf.bsonTypeMappings[descriptor.getElementDescriptor(index).serialName.removeSuffix("?")]
+            } else {
+                conf.bsonTypeMappings[descriptor.getElementDescriptor(index).serialName]
+            }
 
         return true
     }

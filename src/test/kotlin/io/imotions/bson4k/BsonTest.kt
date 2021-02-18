@@ -64,6 +64,34 @@ class BsonTest : StringSpec({
         deserialized shouldBe clazz
     }
 
+    "Type mapping on a nullable type" {
+        val mappingBson = Bson {
+            addTypeMapping(InstantStringSerializer, BsonKind.DATE)
+        }
+        val clazz = StringNullableDateContainer(Instant.now())
+        val doc = mappingBson.encodeToBsonDocument(clazz).also { println(it) }
+
+        doc["date"]?.bsonType shouldBe BsonType.DATE_TIME
+
+        val deserialized = mappingBson.decodeFromBsonDocument<StringNullableDateContainer>(doc)
+
+        deserialized.date shouldBe Instant.ofEpochMilli(clazz.date!!.toEpochMilli())
+    }
+
+    "Type mapping on a nullable type using nulls" {
+        val mappingBson = Bson {
+            addTypeMapping(InstantStringSerializer, BsonKind.DATE)
+        }
+        val clazz = StringNullableDateContainer(null)
+        val doc = mappingBson.encodeToBsonDocument(clazz).also { println(it) }
+
+        doc["date"]?.bsonType shouldBe BsonType.NULL
+
+        val deserialized = mappingBson.decodeFromBsonDocument<StringNullableDateContainer>(doc)
+
+        deserialized shouldBe clazz
+    }
+
     "Adding an invalid type mapping in the builder should throw" {
         shouldThrow<java.lang.IllegalArgumentException> {
             Bson {
