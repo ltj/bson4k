@@ -78,7 +78,11 @@ class BsonDecoder(
             useMapper = if (state == DecoderState.MAP_KEY) {
                 null // Don't return a mapped type as key
             } else {
-                conf.bsonTypeMappings[descriptor.getElementDescriptor(idx).serialName]
+                if (descriptor.getElementDescriptor(idx).isNullable) {
+                    conf.bsonTypeMappings[descriptor.getElementDescriptor(idx).serialName.removeSuffix("?")]
+                } else {
+                    conf.bsonTypeMappings[descriptor.getElementDescriptor(idx).serialName]
+                }
             }
         }
 

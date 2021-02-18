@@ -70,6 +70,11 @@ data class StringDateContainer(
 )
 
 @Serializable
+data class StringNullableDateContainer(
+    @Serializable(with = InstantStringSerializer::class) val date: Instant?
+)
+
+@Serializable
 data class StringObjectIdContainer(
     @Serializable(with = ObjectIdSerializer::class) val objectId: ObjectId
 )
