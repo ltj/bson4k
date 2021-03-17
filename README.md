@@ -2,40 +2,42 @@
 
 # BSON 4K
 
-[BSON](http://bsonspec.org/) is a binary Json format native to [MongoDB](https://mongodb.com). BSON4K is an attempt to
+[BSON](http://bsonspec.org/) is a binary JSON format native to [MongoDB](https://mongodb.com). BSON4K is an attempt to
 implement support for the BSON format for Kotlinx Serialization in an idiomatic way.
 
 ## Features
 
-### Encoding to `BsonDocument` or Json string
+### Encoding to `BsonDocument` or JSON string
 
-Any complex type annotated as `@Serializabla` can be serialized to `BsonDocument` (preferred for e.g. MongoDB driver)
-or directly to a json string. By complex, we mean a class-like reference type; the BSON spec makes a document the root
-entity it makes no sense to support direct serialization of primitives i.e. Kotlin basic types.
+Any complex type annotated as `@Serializable` can be serialized to `BsonDocument`,
+the preferred format by MongoDB drivers, or a JSON string.
+By complex, we mean a class-like reference type; the BSON spec makes a document the root
+entity thus it makes no sense to support top-level serialization of primitives, i.e. Kotlin basic types.
 
-### Decoding from `BsonDocument` or Json string
+### Decoding from `BsonDocument` or JSON string
 
-Likewise, any BSON document can be deserialized into it's Kotlin ("serializable") object counterpart. Alternatively a
-json string can be parsed as long as it is valid BSON.
+Likewise, any BSON document can be deserialized into its Kotlin "serializable" object counterpart.
+Alternatively, a JSON string can be parsed as long as it is valid BSON.
 
 ### Serializer-free type mapping for primitives
 
-We introduce a type mapping feature that allows you to work with clean `PrimitiveKind` serializers and map these to a
-specific BSON type at runtime with minimal overhead. It is meant as a supplement to the existing extendability options,
-especially when working with a multi-platform library that brings its own serializable types accompanied by
+We introduce a type-mapping feature that allows you to work with clean `PrimitiveKind` serializers and map these to a
+specific BSON type at runtime with minimal overhead (e.g. for UUIDs).
+This is meant as a supplement to the existing extendability options of Kotlinx Serialization,
+especially when working with a multiplatform library that brings its own serializable types accompanied by
 format-agnostic serializers.
 
 One of the strengths of Kotlin's serialization runtime is its extendability. If a type is not supported you can very
-easily write a `KSerializer<T>` for that type. Kotlin's primitive types are the only types supported by the
-`Encoding`/`Decoding` interfaces which makes perfect sense, since multi-platform support is a priority.
+easily write a `KSerializer<T>` for that type. Kotlin's multiplatform primitive types are the only types supported by the
+`Encoder`/`Decoder` interfaces which makes perfect sense, since multiplatform support is a top priority.
 
-However, this leads to many developers writing contextual serializers for different common types
-(e.g. UUID, LocalDateTime etc.) that maps to a more "appropriate" native type in the serialization format. While
-convenient this comes with some drawbacks:
+However, this leads to many developers writing custom serializers for common unsupported types
+(e.g. UUID, LocalDateTime, etc.) which map to a supported native type in the serialization format. While
+convenient this comes with drawbacks:
 
 - The serializer must depend on a concrete encoder or decoder that supports serialization to/from these native types.
-- If you consume a (maybe multi-platform) library that already provides serializers for its types, you would be required
-  to implement mapping types that are copy-paste from the library types. Just in order to use your own serializers.
+- If you consume a (possibly multiplatform) library that already provides serializers for its types, you are required
+  to implement mapping types that are a copy/paste from the library types. Just in order to use your own serializers.
 
 Serializers module configuration can mitigate these issues to some degree, but it quickly becomes difficult to manage.
 
@@ -47,9 +49,9 @@ Serializers module configuration can mitigate these issues to some degree, but i
 val bson = Bson {} // Default configuration
 
 val bson = Bson {
-    classDiscriminator = "<type>" // Set the class discriminator
-    serializersModule = mySerializersModule // Configure serializers module 
-    addTypeMapping(MyUUIDSerializer, BsonKind.UUID) // Add a type mapping. Can be called multiple times
+    classDiscriminator = "<type>" // Set the class discriminator.
+    serializersModule = mySerializersModule // Configure serializers module .
+    addTypeMapping(MyUUIDSerializer, BsonKind.UUID) // Add a type mapping. Can be called multiple times.
 }
 ```
 
@@ -63,7 +65,7 @@ val person = Person("Alan", 42)
 
 val doc = bson.encodeToBsonDocument(person)
 
-val json = bson.encodeToString(person) // directly to extended Json
+val json = bson.encodeToString(person) // Encode directly to extended JSON.
 ```
 
 ### Deserialization
@@ -74,12 +76,12 @@ val person = bson.decodeFromBsonDocument<Person>(doc)
 // val person = bson.decodeFromString<Person>(json)
 ```
 
-### Type Mappers
+### Type mappers
 
 ```kotlin
 import java.util.*
 
-// UUID serializer implemented as a format-agnostic primitive kind serializer (String) 
+// UUID serializer implemented as a format-agnostic primitive kind serializer (String).
 object UUIDSerializer : KSerializer<UUID> {
     override fun deserialize(decoder: Decoder): UUID =
         UUID.fromString(decoder.decodeString())
@@ -151,7 +153,7 @@ can be achieved via the type mapping feature. The possible target BSON types are
 **KBson**: A great many thanks to [jershell](https://github.com/jershell) for
 his [kbson](https://github.com/jershell/kbson)
 library. The code has provided a lot of inspiration. It was considered to fork and provide PRs for kbson, but for
-several reasons we wanted to start over: Getting our hands dirty, avoid contextual serialization and be able to quickly
+several reasons we wanted to start over: getting our hands dirty, avoid contextual serialization and being able to quickly
 adapt this library to our own needs.
 
 **avro4K**: Beside being an awesome library that brings in Avro support in Kotlinx serialization, this project also
