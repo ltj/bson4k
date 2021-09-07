@@ -15,10 +15,10 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.4.30"
-    kotlin("plugin.serialization") version "1.4.30"
+    kotlin("jvm") version "1.5.21"
+    kotlin("plugin.serialization") version "1.5.21"
     `maven-publish`
-    id("io.gitlab.arturbosch.detekt").version("1.16.0-RC1")
+    id("io.gitlab.arturbosch.detekt").version("1.17.0")
 }
 
 group = "io.imotions.bson4k"
@@ -27,20 +27,19 @@ version = "0.1-RC6"
 val ktlint by configurations.creating
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
 dependencies {
-    ktlint("com.pinterest:ktlint:0.40.0")
+    ktlint("com.pinterest:ktlint:0.42.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.0.1")
-    implementation("org.mongodb:bson:4.2.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.2.2")
+    implementation("org.mongodb:bson:4.3.1")
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.0.1")
-    testImplementation("io.kotest:kotest-runner-junit5:4.4.1")
-    testImplementation("io.kotest:kotest-assertions-core:4.4.1")
-    testImplementation("io.kotest:kotest-property:4.4.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    testImplementation("io.kotest:kotest-runner-junit5:4.6.1")
+    testImplementation("io.kotest:kotest-assertions-core:4.6.1")
+    testImplementation("io.kotest:kotest-property:4.6.1")
 }
 
 tasks.test {
