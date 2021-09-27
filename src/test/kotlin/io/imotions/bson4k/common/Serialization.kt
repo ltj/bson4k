@@ -19,6 +19,8 @@ package io.imotions.bson4k.common
 import io.imotions.bson4k.Bson
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.nullable
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -77,4 +79,26 @@ object ObjectIdSerializer : KSerializer<ObjectId> {
 
     override fun serialize(encoder: Encoder, value: ObjectId) =
         encoder.encodeString(value.toHexString())
+}
+
+@ExperimentalSerializationApi
+object CustomNullableSerializer : KSerializer<String?> {
+    override fun deserialize(decoder: Decoder): String? {
+        if (decoder.decodeNotNullMark()) {
+            return decoder.decodeString()
+        } else {
+            // Return null vs decoder.decodeNull() should not matter
+            return null
+        }
+    }
+
+    override val descriptor: SerialDescriptor = String.serializer().nullable.descriptor
+
+    override fun serialize(encoder: Encoder, value: String?) {
+        if (value == null) {
+            encoder.encodeNull()
+        } else {
+            encoder.encodeString(value)
+        }
+    }
 }

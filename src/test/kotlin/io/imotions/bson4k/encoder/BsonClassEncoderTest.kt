@@ -16,10 +16,7 @@
 
 package io.imotions.bson4k.encoder
 
-import io.imotions.bson4k.common.Class2
-import io.imotions.bson4k.common.Class3
-import io.imotions.bson4k.common.EnumClass
-import io.imotions.bson4k.common.bson
+import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.ints.shouldBeExactly
@@ -80,5 +77,23 @@ class BsonClassEncoderTest : StringSpec({
             .also { println(it) }
 
         document["y"] shouldBe BsonString(EnumClass.THIRD.name)
+    }
+
+    "Encode class with all null values" {
+        val clazz = Wrapper2<Int?, Int?>(null, null)
+        val document = bson.encodeToBsonDocument(clazz)
+            .also { println(it) }
+
+        document["x"] shouldBe BsonNull()
+        document["y"] shouldBe BsonNull()
+    }
+
+    "Encode class with default nullables" {
+        val clazz = Wrapper2Null<String, String>(y = "hello")
+        val document = bson.encodeToBsonDocument(clazz)
+            .also { println(it) }
+
+        document["x"] shouldBe BsonNull()
+        document["y"] shouldBe BsonString("hello")
     }
 })

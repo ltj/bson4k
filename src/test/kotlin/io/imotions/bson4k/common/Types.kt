@@ -45,6 +45,12 @@ data class Wrapper<T>(val value: T)
 data class Wrapper2<A, B>(val x: A, val y: B)
 
 @Serializable
+data class Wrapper2Null<A, B>(val x: A? = null, val y: B?)
+
+@Serializable
+data class CustomNullables(val a: String? = null, @Serializable(CustomNullableSerializer::class) val b: String? = null)
+
+@Serializable
 data class MapWrapper<K, V>(val map: Map<K, V>)
 
 // Classes

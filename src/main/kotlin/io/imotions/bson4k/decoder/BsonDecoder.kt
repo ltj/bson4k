@@ -146,7 +146,12 @@ class BsonDecoder(
     }
 
     override fun decodeNotNullMark(): Boolean {
-        return reader.currentBsonType != BsonType.NULL
+        return if (reader.currentBsonType == BsonType.NULL) {
+            reader.readNull()
+            false
+        } else {
+            true
+        }
     }
 
     override fun decodeBoolean(): Boolean = decodeBsonElement(reader::readBoolean, String::toBoolean)
@@ -167,10 +172,7 @@ class BsonDecoder(
     }
 
     override fun decodeNull(): Nothing? = decodeBsonElement(
-        {
-            reader.readNull()
-            null
-        },
+        { null },
         { null }
     )
 
