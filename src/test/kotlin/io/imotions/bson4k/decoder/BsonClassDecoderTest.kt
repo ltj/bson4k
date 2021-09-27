@@ -16,10 +16,7 @@
 
 package io.imotions.bson4k.decoder
 
-import io.imotions.bson4k.common.EnumClass
-import io.imotions.bson4k.common.Wrapper
-import io.imotions.bson4k.common.Wrapper2
-import io.imotions.bson4k.common.bson
+import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -52,5 +49,23 @@ class BsonClassDecoderTest : StringSpec({
         val doc = Document("x", "enum fields").append("y", "FOURTH")
         val wrapper = bson.decodeFromBsonDocument<Wrapper2<String, EnumClass>>(doc.toBsonDocument())
         wrapper shouldBe Wrapper2("enum fields", EnumClass.FOURTH)
+    }
+
+    "Decode class with nullables" {
+        val doc = Document("x", null).append("y", 42)
+        val wrapper = bson.decodeFromBsonDocument<Wrapper2<String?, Int?>>(doc.toBsonDocument())
+        wrapper shouldBe Wrapper2(null, 42)
+    }
+
+    "Decode class with nullable defaults present" {
+        val doc = Document("x", null).append("y", null)
+        val wrapper = bson.decodeFromBsonDocument<Wrapper2Null<String, String>>(doc.toBsonDocument())
+        wrapper shouldBe Wrapper2Null(y = null)
+    }
+
+    "Decode class with custom nullable serializer" {
+        val doc = Document("a", null).append("b", null)
+        val deserialized = bson.decodeFromBsonDocument<CustomNullables>(doc.toBsonDocument())
+        deserialized shouldBe CustomNullables(null)
     }
 })
