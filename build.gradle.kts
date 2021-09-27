@@ -22,7 +22,7 @@ plugins {
 }
 
 group = "io.imotions.bson4k"
-version = "0.2-RC1"
+version = "0.2-RC2"
 
 val ktlint by configurations.creating
 
