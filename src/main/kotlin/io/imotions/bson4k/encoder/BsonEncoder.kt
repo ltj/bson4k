@@ -18,12 +18,10 @@ package io.imotions.bson4k.encoder
 
 import io.imotions.bson4k.BsonConf
 import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.invalidKeyKindException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.SerializersModule
@@ -59,8 +57,17 @@ class BsonEncoder(
                 else -> writer.writeStartDocument()
             }
             StructureKind.MAP -> {
-                writer.writeStartDocument()
-                state = State.MAP
+                if (descriptor.elementDescriptors.first().kind is StructureKind.CLASS) {
+                    if (conf.allowStructuredMapKeys) {
+                        writer.writeStartArray()
+                        state = State.STRUCTURED_MAP
+                    } else {
+                        throw invalidKeyKindException(descriptor)
+                    }
+                } else {
+                    writer.writeStartDocument()
+                    state = State.MAP
+                }
             }
             StructureKind.OBJECT -> writer.writeStartDocument()
             StructureKind.LIST -> {
@@ -80,12 +87,15 @@ class BsonEncoder(
     override fun endStructure(descriptor: SerialDescriptor) {
         when (descriptor.kind) {
             StructureKind.LIST -> writer.writeEndArray()
+            StructureKind.MAP -> if (state == State.STRUCTURED_MAP) {
+                writer.writeEndArray()
+            } else {
+                writer.writeEndDocument()
+            }
             is StructureKind -> if (state != State.POLYMORPHIC) writer.writeEndDocument()
-            is PolymorphicKind -> {
-                if (state == State.POLYMORPHIC) {
-                    writer.writeEndDocument()
-                    state = State.BEGIN
-                }
+            is PolymorphicKind -> if (state == State.POLYMORPHIC) {
+                writer.writeEndDocument()
+                state = State.BEGIN
             }
             else -> throw SerializationException("Unsupported structure kind: ${descriptor.kind}")
         }
@@ -94,7 +104,7 @@ class BsonEncoder(
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         when {
             descriptor.kind is StructureKind.CLASS -> writer.writeName(descriptor.getElementName(index))
-            descriptor.kind is StructureKind.MAP -> state = when (state) {
+            descriptor.kind is StructureKind.MAP && state != State.STRUCTURED_MAP -> state = when (state) {
                 State.MAP_KEY -> State.MAP_VALUE
                 else -> State.MAP_KEY
             }
@@ -180,6 +190,7 @@ class BsonEncoder(
         BEGIN,
         POLYMORPHIC,
         MAP,
+        STRUCTURED_MAP,
         MAP_KEY,
         MAP_VALUE
     }
