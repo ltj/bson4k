@@ -16,16 +16,19 @@
 
 package io.imotions.bson4k.common
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 
 internal const val allowStructuredMapKeysHint =
-    "Use 'allowStructuredMapKeys = true' in 'Json {}' builder to convert such maps to [key1, value1, key2, value2,...] arrays."
+    "Use 'allowStructuredMapKeys = true' in 'Json {}' builder to convert such maps to " +
+        "[key1, value1, key2, value2,...] arrays."
 
 sealed class BsonException(message: String) : SerializationException(message)
 
 class BsonEncodingException(message: String) : BsonException(message)
 
+@OptIn(ExperimentalSerializationApi::class)
 fun invalidKeyKindException(keyDescriptor: SerialDescriptor) = BsonEncodingException(
     "Value of type '${keyDescriptor.serialName}' cannot be used as a BSON map key. " +
         "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}'.\n" +

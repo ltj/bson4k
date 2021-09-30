@@ -23,6 +23,7 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.CompositeDecoder.Companion.DECODE_DONE
@@ -114,8 +115,14 @@ class BsonDecoder(
                 reader.readStartArray()
             }
             StructureKind.MAP -> {
-                state = DecoderState.MAP_KEY
-                reader.readStartDocument()
+                if (descriptor.elementDescriptors.first().kind == StructureKind.CLASS && conf.allowStructuredMapKeys) {
+                    currentIndex = -1
+                    state = DecoderState.LIST
+                    reader.readStartArray()
+                } else {
+                    state = DecoderState.MAP_KEY
+                    reader.readStartDocument()
+                }
             }
             is PolymorphicKind -> {
                 state = DecoderState.POLYMORPHIC
@@ -137,6 +144,13 @@ class BsonDecoder(
         when (descriptor.kind) {
             StructureKind.LIST -> {
                 reader.readEndArray()
+            }
+            StructureKind.MAP -> {
+                if (reader.state == END_OF_ARRAY) {
+                    reader.readEndArray()
+                } else {
+                    reader.readEndDocument()
+                }
             }
             is StructureKind -> {
                 reader.readEndDocument()
