@@ -35,15 +35,16 @@ fun rootNotDocumentException() = BsonEncodingException(
         "containing other types. Hence primitives and arrays cannot be serialized without an enclosing type."
 )
 
-@OptIn(ExperimentalSerializationApi::class)
+@ExperimentalSerializationApi
 fun invalidKeyKindException(keyDescriptor: SerialDescriptor) = BsonEncodingException(
     "Value of type '${keyDescriptor.serialName}' cannot be used as a BSON map key. " +
         "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}'.\n" +
         allowStructuredMapKeysHint
 )
 
-@OptIn(ExperimentalSerializationApi::class)
-fun missingClassDiscriminatorException(expectedDiscriminator: String, descriptor: SerialDescriptor) = BsonDecodingException(
-    "The expected class discriminator '$expectedDiscriminator', was not found when decoding the " +
-        "polymorphic type '${descriptor.serialName}'."
-)
+@ExperimentalSerializationApi
+fun missingClassDiscriminatorException(expectedDiscriminator: String, descriptor: SerialDescriptor) =
+    BsonDecodingException(
+        "The expected class discriminator '$expectedDiscriminator', was not found when decoding the " +
+            "polymorphic type '${descriptor.serialName}'."
+    )
