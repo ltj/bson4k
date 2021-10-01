@@ -28,5 +28,6 @@ typealias SerialName = String
 data class BsonConf internal constructor(
     val serializersModule: SerializersModule = EmptySerializersModule,
     val classDiscriminator: String = CLASS_DISCRIMINATOR,
-    val bsonTypeMappings: Map<SerialName, BsonKind> = emptyMap()
+    val bsonTypeMappings: Map<SerialName, BsonKind> = emptyMap(),
+    val allowStructuredMapKeys: Boolean = false
 )

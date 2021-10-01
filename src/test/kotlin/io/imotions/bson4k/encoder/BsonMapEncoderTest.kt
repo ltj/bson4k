@@ -19,12 +19,15 @@ package io.imotions.bson4k.encoder
 import io.imotions.bson4k.Bson
 import io.imotions.bson4k.BsonKind
 import io.imotions.bson4k.common.*
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.shouldBe
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.MapSerializer
 import org.bson.BsonInt32
+import org.bson.BsonType
 import java.util.*
 
 @ExperimentalSerializationApi
@@ -80,5 +83,35 @@ class BsonMapEncoderTest : StringSpec({
             .also { println(it) }
 
         doc.keys shouldContainAll map.keys.map { it.toString() }
+    }
+
+    "Encode map with composite keys" {
+        val structuredBson = Bson {
+            allowStructuredMapKeys = true
+        }
+        val map = mapOf(
+            Wrapper2("foo", "bar") to 0L,
+            Wrapper2("hello", "world") to 10_000_000L
+        )
+        val wrapper = Wrapper(map)
+        val doc = structuredBson.encodeToBsonDocument(wrapper)
+            .also { println(it) }
+
+        doc.getArray("value").forEachIndexed { index, bsonValue ->
+            bsonValue.bsonType shouldBe if (index % 2 == 0) {
+                BsonType.DOCUMENT
+            } else {
+                BsonType.INT64
+            }
+        }
+    }
+
+    "Encode map with composite key throws BsonEncodingException without allowedStructuredMapKeys" {
+        val map = mapOf(
+            Wrapper2("foo", "bar") to 0L,
+            Wrapper2("hello", "world") to 10_000_000L
+        )
+        val wrapper = Wrapper(map)
+        shouldThrow<BsonEncodingException> { bson.encodeToBsonDocument(wrapper) }
     }
 })

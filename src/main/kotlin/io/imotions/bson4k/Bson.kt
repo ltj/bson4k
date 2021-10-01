@@ -67,6 +67,7 @@ fun Bson(builderAction: BsonBuilder.() -> Unit): Bson {
 class BsonBuilder internal constructor(conf: BsonConf) {
     var classDiscriminator = conf.classDiscriminator
     var serializersModule = conf.serializersModule
+    var allowStructuredMapKeys = conf.allowStructuredMapKeys
     internal val bsonTypeMappings = conf.bsonTypeMappings.toMutableMap()
 
     fun addTypeMapping(serializer: KSerializer<*>, bsonKind: BsonKind) {
@@ -83,7 +84,8 @@ class BsonBuilder internal constructor(conf: BsonConf) {
         return BsonConf(
             classDiscriminator = classDiscriminator,
             serializersModule = serializersModule,
-            bsonTypeMappings = bsonTypeMappings
+            bsonTypeMappings = bsonTypeMappings,
+            allowStructuredMapKeys = allowStructuredMapKeys
         )
     }
 }
