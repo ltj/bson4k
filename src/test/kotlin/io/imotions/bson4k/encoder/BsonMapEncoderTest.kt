@@ -22,10 +22,12 @@ import io.imotions.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.shouldBe
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.MapSerializer
 import org.bson.BsonInt32
+import org.bson.BsonType
 import java.util.*
 
 @ExperimentalSerializationApi
@@ -94,6 +96,14 @@ class BsonMapEncoderTest : StringSpec({
         val wrapper = Wrapper(map)
         val doc = structuredBson.encodeToBsonDocument(wrapper)
             .also { println(it) }
+
+        doc.getArray("value").forEachIndexed { index, bsonValue ->
+            bsonValue.bsonType shouldBe if (index % 2 == 0) {
+                BsonType.DOCUMENT
+            } else {
+                BsonType.INT64
+            }
+        }
     }
 
     "Encode map with composite key throws BsonEncodingException without allowedStructuredMapKeys" {
