@@ -23,6 +23,7 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import org.bson.BsonBinary
 import org.bson.Document
 import org.bson.UuidRepresentation
@@ -104,6 +105,32 @@ class BsonMapDecoderTest : StringSpec({
             MapSerializer(
                 UUIDSerializer,
                 StringUUIDContainer.serializer()
+            ),
+            doc.toBsonDocument()
+        )
+    }
+
+    "Decode to map with composite (structured) keys" {
+        val structuredBson = Bson {
+            allowStructuredMapKeys = true
+        }
+        val doc = Document(
+            "value",
+            listOf(
+                Document("x", "foo").append("y", "bar"),
+                0L,
+                Document("x", "hello").append("y", "world"),
+                10_000_000L
+            )
+        )
+            .also { println(it.toJson()) }
+
+        structuredBson.decodeFromBsonDocument(
+            Wrapper.serializer(
+                MapSerializer(
+                    Wrapper2.serializer(String.serializer(), String.serializer()),
+                    Long.serializer()
+                )
             ),
             doc.toBsonDocument()
         )

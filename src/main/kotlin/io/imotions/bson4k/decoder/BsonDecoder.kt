@@ -18,11 +18,13 @@ package io.imotions.bson4k.decoder
 
 import io.imotions.bson4k.BsonConf
 import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.BsonDecodingException
+import io.imotions.bson4k.common.missingClassDiscriminatorException
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.elementDescriptors
 import kotlinx.serialization.encoding.AbstractDecoder
 import kotlinx.serialization.encoding.CompositeDecoder
 import kotlinx.serialization.encoding.CompositeDecoder.Companion.DECODE_DONE
@@ -46,7 +48,7 @@ class BsonDecoder(
 
     private var stateStack = ArrayDeque<Pair<DecoderState, Int>>()
     private var state = DecoderState.DOCUMENT
-    private var currentIndex = -1
+    private var currentIndex = 0
     private var useMapper: BsonKind? = null
 
     override fun decodeElementIndex(descriptor: SerialDescriptor): Int {
@@ -63,7 +65,7 @@ class BsonDecoder(
             }
             DecoderState.LIST -> {
                 val type = reader.readBsonType()
-                if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else ++currentIndex
+                if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else currentIndex++
             }
             DecoderState.MAP_KEY -> {
                 val type = reader.readBsonType()
@@ -79,9 +81,7 @@ class BsonDecoder(
                         if (reader.readName() == conf.classDiscriminator) {
                             currentIndex++
                         } else {
-                            throw SerializationException(
-                                "Unknown class discriminator. Expected \"${conf.classDiscriminator}\""
-                            )
+                            throw missingClassDiscriminatorException(conf.classDiscriminator, descriptor)
                         }
                     }
                     1 -> currentIndex++
@@ -109,13 +109,15 @@ class BsonDecoder(
         preserveState()
         when (descriptor.kind) {
             StructureKind.LIST -> {
-                state = DecoderState.LIST
-                currentIndex = -1
-                reader.readStartArray()
+                beginListStructure()
             }
             StructureKind.MAP -> {
-                state = DecoderState.MAP_KEY
-                reader.readStartDocument()
+                if (descriptor.elementDescriptors.first().kind == StructureKind.CLASS && conf.allowStructuredMapKeys) {
+                    beginListStructure()
+                } else {
+                    state = DecoderState.MAP_KEY
+                    reader.readStartDocument()
+                }
             }
             is PolymorphicKind -> {
                 state = DecoderState.POLYMORPHIC
@@ -132,11 +134,24 @@ class BsonDecoder(
         return super.beginStructure(descriptor)
     }
 
+    private fun beginListStructure() {
+        state = DecoderState.LIST
+        currentIndex = 0
+        reader.readStartArray()
+    }
+
     override fun endStructure(descriptor: SerialDescriptor) {
         restoreState()
         when (descriptor.kind) {
             StructureKind.LIST -> {
                 reader.readEndArray()
+            }
+            StructureKind.MAP -> {
+                if (reader.state == END_OF_ARRAY) {
+                    reader.readEndArray()
+                } else {
+                    reader.readEndDocument()
+                }
             }
             is StructureKind -> {
                 reader.readEndDocument()
@@ -209,7 +224,7 @@ class BsonDecoder(
 
     private fun <T> decodeBsonElement(readOps: () -> T, parse: (String) -> T): T {
         if (reader.state == INITIAL) {
-            throw SerializationException("Bson document cannot be decoded to a primitive type")
+            throw BsonDecodingException("BSON document cannot be decoded to a primitive type")
         }
         return when (state) {
             DecoderState.MAP_KEY -> {

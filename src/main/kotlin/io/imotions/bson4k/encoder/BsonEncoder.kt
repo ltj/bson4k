@@ -18,12 +18,11 @@ package io.imotions.bson4k.encoder
 
 import io.imotions.bson4k.BsonConf
 import io.imotions.bson4k.BsonKind
+import io.imotions.bson4k.common.BsonEncodingException
+import io.imotions.bson4k.common.invalidKeyKindException
+import io.imotions.bson4k.common.rootNotDocumentException
 import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.descriptors.PolymorphicKind
-import kotlinx.serialization.descriptors.PrimitiveKind
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
 import kotlinx.serialization.encoding.CompositeEncoder
 import kotlinx.serialization.modules.SerializersModule
@@ -59,19 +58,28 @@ class BsonEncoder(
                 else -> writer.writeStartDocument()
             }
             StructureKind.MAP -> {
-                writer.writeStartDocument()
-                state = State.MAP
+                state = if (descriptor.elementDescriptors.first().kind is StructureKind.CLASS) {
+                    if (conf.allowStructuredMapKeys) {
+                        writer.writeStartArray()
+                        State.STRUCTURED_MAP
+                    } else {
+                        throw invalidKeyKindException(descriptor)
+                    }
+                } else {
+                    writer.writeStartDocument()
+                    State.MAP
+                }
             }
             StructureKind.OBJECT -> writer.writeStartDocument()
             StructureKind.LIST -> {
-                if (state == State.ROOT) throw SerializationException("Top-level arrays are not supported")
+                if (state == State.ROOT) throw rootNotDocumentException()
                 writer.writeStartArray()
             }
             is PolymorphicKind -> {
                 writer.writeStartDocument()
                 state = State.POLYMORPHIC
             }
-            else -> throw SerializationException("Unsupported structure kind: ${descriptor.kind}")
+            else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
         if (state == State.ROOT) state = State.BEGIN
         return this
@@ -80,21 +88,24 @@ class BsonEncoder(
     override fun endStructure(descriptor: SerialDescriptor) {
         when (descriptor.kind) {
             StructureKind.LIST -> writer.writeEndArray()
-            is StructureKind -> if (state != State.POLYMORPHIC) writer.writeEndDocument()
-            is PolymorphicKind -> {
-                if (state == State.POLYMORPHIC) {
-                    writer.writeEndDocument()
-                    state = State.BEGIN
-                }
+            StructureKind.MAP -> if (state == State.STRUCTURED_MAP) {
+                writer.writeEndArray()
+            } else {
+                writer.writeEndDocument()
             }
-            else -> throw SerializationException("Unsupported structure kind: ${descriptor.kind}")
+            is StructureKind -> if (state != State.POLYMORPHIC) writer.writeEndDocument()
+            is PolymorphicKind -> if (state == State.POLYMORPHIC) {
+                writer.writeEndDocument()
+                state = State.BEGIN
+            }
+            else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
     }
 
     override fun encodeElement(descriptor: SerialDescriptor, index: Int): Boolean {
         when {
             descriptor.kind is StructureKind.CLASS -> writer.writeName(descriptor.getElementName(index))
-            descriptor.kind is StructureKind.MAP -> state = when (state) {
+            descriptor.kind is StructureKind.MAP && state != State.STRUCTURED_MAP -> state = when (state) {
                 State.MAP_KEY -> State.MAP_VALUE
                 else -> State.MAP_KEY
             }
@@ -169,7 +180,7 @@ class BsonEncoder(
 
     private fun <T : Any> encodeBsonElement(value: T, writeOps: (T) -> Unit, asString: T.() -> String = Any::toString) {
         when (state) {
-            State.ROOT -> throw SerializationException("Top-level primitives are not allowed.")
+            State.ROOT -> throw rootNotDocumentException()
             State.MAP_KEY -> writer.writeName(value.asString())
             else -> writeOps(value)
         }
@@ -180,6 +191,7 @@ class BsonEncoder(
         BEGIN,
         POLYMORPHIC,
         MAP,
+        STRUCTURED_MAP,
         MAP_KEY,
         MAP_VALUE
     }

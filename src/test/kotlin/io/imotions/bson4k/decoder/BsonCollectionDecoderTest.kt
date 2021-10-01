@@ -64,7 +64,9 @@ class BsonCollectionDecoderTest : StringSpec({
         println(document.toJson())
 
         val wrapper =
-            bson.decodeFromBsonDocument<CollectionWrapper<CollectionWrapper<Wrapper<String>>>>(document.toBsonDocument())
+            bson.decodeFromBsonDocument<CollectionWrapper<CollectionWrapper<Wrapper<String>>>>(
+                document.toBsonDocument()
+            )
         val inner = CollectionWrapper(list.map { Wrapper(it.toString()) })
         wrapper shouldBe CollectionWrapper(listOf(inner, inner))
     }
