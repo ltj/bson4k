@@ -49,11 +49,18 @@ Serializers module configuration can mitigate these issues to some degree, but i
 val bson = Bson {} // Default configuration
 
 val bson = Bson {
-    classDiscriminator = "<type>" // Set the class discriminator.
+    classDiscriminator = "<type>" // Set the class discriminator (field name to hold the type)
     serializersModule = mySerializersModule // Configure serializers module .
     addTypeMapping(MyUUIDSerializer, BsonKind.UUID) // Add a type mapping. Can be called multiple times.
+    allowStructuredMapKeys = true // Enable serialization of complex map keys using arrays ([k, v...kn, vn])
 }
 ```
+| Configuration parameter  | Optional | Default  | Accepted input                                     |
+| ------------------------ | -------- | -------- | -------------------------------------------------- |
+| `serializersModule`      | yes      | None     | T : SerializersModule                              |
+| `classDiscriminator`     | yes      | "__type" | String (avoid leading reserved bson chars like `$` |
+| `addTypeMapping`         | yes      | None.    | `addTypeMapping(Serializer, BsonKind)`             |
+| `allowStructuredMapKeys` | yes      | `false`  | Boolean                                            |
 
 ### Serialization
 
