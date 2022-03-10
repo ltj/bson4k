@@ -15,10 +15,10 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.5.21"
-    kotlin("plugin.serialization") version "1.5.21"
+    kotlin("jvm") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
     `maven-publish`
-    id("io.gitlab.arturbosch.detekt").version("1.17.0")
+    id("io.gitlab.arturbosch.detekt").version("1.19.0")
 }
 
 group = "io.imotions.bson4k"
@@ -31,15 +31,15 @@ repositories {
 }
 
 dependencies {
-    ktlint("com.pinterest:ktlint:0.42.1")
+    ktlint("com.pinterest:ktlint:0.44.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.2.2")
-    implementation("org.mongodb:bson:4.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.1")
+    implementation("org.mongodb:bson:4.5.0")
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
-    testImplementation("io.kotest:kotest-runner-junit5:4.6.1")
-    testImplementation("io.kotest:kotest-assertions-core:4.6.1")
-    testImplementation("io.kotest:kotest-property:4.6.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.1.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.1.0")
+    testImplementation("io.kotest:kotest-property:5.1.0")
 }
 
 tasks.test {
@@ -91,8 +91,8 @@ val ktlintCheck by tasks.registering(JavaExec::class) {
 
     description = "Check Kotlin code style."
     classpath = ktlint
-    main = "com.pinterest.ktlint.Main"
-    args = listOf("--disabled_rules=no-wildcard-imports", "src/**/*.kt")
+    mainClass.set("com.pinterest.ktlint.Main")
+    args = listOf("src/**/*.kt")
 }
 
 val ktlintFormat by tasks.registering(JavaExec::class) {
@@ -101,8 +101,9 @@ val ktlintFormat by tasks.registering(JavaExec::class) {
 
     description = "Fix Kotlin code style deviations."
     classpath = ktlint
-    main = "com.pinterest.ktlint.Main"
-    args = listOf("-F", "--disabled_rules=no-wildcard-imports", "src/**/*.kt")
+    mainClass.set("com.pinterest.ktlint.Main")
+    args = listOf("-F", "src/**/*.kt")
+    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 tasks.detekt {
