@@ -74,7 +74,7 @@ class BsonBuilder internal constructor(conf: BsonConf) {
         require(serializer.descriptor.kind in bsonKind.supportedKinds) {
             "Mapping to and from ${serializer.descriptor.kind} is not supported by $bsonKind"
         }
-        bsonTypeMappings.put(serializer.descriptor.serialName, bsonKind)
+        bsonTypeMappings[serializer.descriptor.serialName] = bsonKind
     }
 
     fun build(): BsonConf {

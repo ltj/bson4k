@@ -157,7 +157,7 @@ class BsonDecoder(
             is StructureKind -> {
                 reader.readEndDocument()
             }
-            else -> { } // noop
+            else -> {} // noop
         }
         super.endStructure(descriptor)
     }
@@ -181,11 +181,24 @@ class BsonDecoder(
 
     override fun decodeFloat(): Float = decodeDouble().toFloat()
 
-    override fun decodeInt(): Int = decodeBsonElement(reader::readInt32, String::toInt)
+    override fun decodeInt(): Int = if (reader.currentBsonType == BsonType.INT64) {
+        val number = decodeBsonElement(reader::readInt64, String::toLong)
+        if (number >= Int.MIN_VALUE && number <= Int.MAX_VALUE) {
+            number.toInt()
+        } else {
+            throw BsonDecodingException("Cannot cast INT64 to Int. Number is out of range: $number")
+        }
+    } else {
+        decodeBsonElement(reader::readInt32, String::toInt)
+    }
 
     override fun decodeLong(): Long = when (useMapper) {
         BsonKind.DATE -> decodeBsonDateTimeToLong()
-        else -> decodeBsonElement(reader::readInt64, String::toLong)
+        else -> if (reader.currentBsonType == BsonType.INT32) {
+            decodeBsonElement(reader::readInt32, String::toInt).toLong()
+        } else {
+            decodeBsonElement(reader::readInt64, String::toLong)
+        }
     }
 
     override fun decodeNull(): Nothing? = decodeBsonElement(

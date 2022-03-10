@@ -25,6 +25,7 @@ import io.kotest.matchers.shouldBe
 import io.kotest.property.Arb
 import io.kotest.property.arbitrary.arbitrary
 import io.kotest.property.arbitrary.localDateTime
+import io.kotest.property.arbitrary.long
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
@@ -59,6 +60,22 @@ class BsonPrimitivesDecoderTest : StringSpec({
             val document = Document(VALUE_KEY, l).toBsonDocument()
             val wrapper = bson.decodeFromBsonDocument<Wrapper<Long>>(document)
             wrapper.value shouldBe l
+        }
+    }
+
+    "Decode INT64 as Int within bounds" {
+        checkAll(Arb.long(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())) { l ->
+            val document = Document(VALUE_KEY, l).toBsonDocument()
+            val wrapper = bson.decodeFromBsonDocument<Wrapper<Int>>(document)
+            wrapper.value shouldBe l.toInt()
+        }
+    }
+
+    "Decode INT32 as Long" {
+        checkAll<Int> { i ->
+            val document = Document(VALUE_KEY, i).toBsonDocument()
+            val wrapper = bson.decodeFromBsonDocument<Wrapper<Long>>(document)
+            wrapper.value shouldBe i.toLong()
         }
     }
 
