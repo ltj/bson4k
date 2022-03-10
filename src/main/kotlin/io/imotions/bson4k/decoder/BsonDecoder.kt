@@ -130,6 +130,7 @@ class BsonDecoder(
                 }
                 state = DecoderState.DOCUMENT
             }
+            else -> throw BsonDecodingException("Illegal begin structure kind: ${descriptor.kind}")
         }
         return super.beginStructure(descriptor)
     }
@@ -156,6 +157,7 @@ class BsonDecoder(
             is StructureKind -> {
                 reader.readEndDocument()
             }
+            else -> { } // noop
         }
         super.endStructure(descriptor)
     }
