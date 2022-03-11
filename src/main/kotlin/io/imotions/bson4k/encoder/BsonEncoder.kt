@@ -51,6 +51,9 @@ class BsonEncoder(
             return writer.document
         }
 
+    override fun shouldEncodeElementDefault(descriptor: SerialDescriptor, index: Int): Boolean =
+        conf.encodeDefaults
+
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         when (descriptor.kind) {
             StructureKind.CLASS -> when (state) {

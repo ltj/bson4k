@@ -53,16 +53,18 @@ val bson = Bson {
     addTypeMapping(MyUUIDSerializer, BsonKind.UUID) // Add a type mapping. Can be called multiple times.
     allowStructuredMapKeys = true // Enable serialization of complex map keys using arrays ([k, v...kn, vn])
     implicitIntegerConversion = false // Disable attempt to implicitly convert integer kinds
+    encodeDefaults = true // Always encode default values
 }
 ```
 
-| Configuration parameter     | Optional | Default  | Accepted input                                     |
-|-----------------------------| -------- | -------- | -------------------------------------------------- |
-| `serializersModule`         | yes      | None     | T : SerializersModule                              |
-| `classDiscriminator`        | yes      | "__type" | String (avoid leading reserved bson chars like `$` |
-| `addTypeMapping`            | yes      | None.    | `addTypeMapping(Serializer, BsonKind)`             |
-| `allowStructuredMapKeys`    | yes      | `false`  | Boolean                                            |
-| `implicitIntegerConversion` | yes   | `true`   | Boolean                                            |
+| Configuration parameter     | Optional | Default   | Accepted input                                     |
+|-----------------------------|----------|-----------|----------------------------------------------------|
+| `serializersModule`         | yes      | None      | T : SerializersModule                              |
+| `classDiscriminator`        | yes      | "__type"  | String (avoid leading reserved bson chars like `$` |
+| `addTypeMapping`            | yes      | None.     | `addTypeMapping(Serializer, BsonKind)`             |
+| `allowStructuredMapKeys`    | yes      | `false`   | Boolean                                            |
+| `implicitIntegerConversion` | yes      | `true`    | Boolean                                            |
+| `encodeDefaults`            | yes      | `false`   | Boolean                                            |
 
 ### Serialization
 

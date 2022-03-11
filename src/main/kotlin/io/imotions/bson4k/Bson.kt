@@ -69,6 +69,7 @@ class BsonBuilder internal constructor(conf: BsonConf) {
     var serializersModule = conf.serializersModule
     var allowStructuredMapKeys = conf.allowStructuredMapKeys
     var implicitIntegerConversion = conf.implicitIntegerConversion
+    var encodeDefaults = conf.encodeDefaults
     internal val bsonTypeMappings = conf.bsonTypeMappings.toMutableMap()
 
     fun addTypeMapping(serializer: KSerializer<*>, bsonKind: BsonKind) {
@@ -87,7 +88,8 @@ class BsonBuilder internal constructor(conf: BsonConf) {
             serializersModule = serializersModule,
             bsonTypeMappings = bsonTypeMappings,
             allowStructuredMapKeys = allowStructuredMapKeys,
-            implicitIntegerConversion = implicitIntegerConversion
+            implicitIntegerConversion = implicitIntegerConversion,
+            encodeDefaults = encodeDefaults
         )
     }
 }
