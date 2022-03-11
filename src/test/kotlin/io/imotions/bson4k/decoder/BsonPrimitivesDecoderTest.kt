@@ -29,10 +29,7 @@ import io.kotest.property.arbitrary.long
 import io.kotest.property.checkAll
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
-import org.bson.BsonBinary
-import org.bson.BsonDateTime
-import org.bson.Document
-import org.bson.UuidRepresentation
+import org.bson.*
 import org.bson.types.ObjectId
 import java.time.ZoneOffset
 import java.util.*
@@ -63,7 +60,7 @@ class BsonPrimitivesDecoderTest : StringSpec({
         }
     }
 
-    "Decode INT64 as Int within bounds" {
+    "Decode INT64 implicitly as Int within bounds" {
         checkAll(Arb.long(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong())) { l ->
             val document = Document(VALUE_KEY, l).toBsonDocument()
             val wrapper = bson.decodeFromBsonDocument<Wrapper<Int>>(document)
@@ -71,7 +68,7 @@ class BsonPrimitivesDecoderTest : StringSpec({
         }
     }
 
-    "Decode INT32 as Long" {
+    "Decode INT32 implicitly as Long" {
         checkAll<Int> { i ->
             val document = Document(VALUE_KEY, i).toBsonDocument()
             val wrapper = bson.decodeFromBsonDocument<Wrapper<Long>>(document)
@@ -183,6 +180,23 @@ class BsonPrimitivesDecoderTest : StringSpec({
     "Throw exception if attempting to decode directly to primitive type" {
         shouldThrow<SerializationException> {
             bson.decodeFromBsonDocument<String>(Document().toBsonDocument())
+        }
+    }
+
+    "Throw exception if implicit conversion from INT64 to INT32 is out-of-bounds" {
+        shouldThrow<BsonDecodingException> {
+            val document = Document(VALUE_KEY, Long.MAX_VALUE).toBsonDocument()
+            bson.decodeFromBsonDocument<Wrapper<Int>>(document)
+        }
+    }
+
+    "Throw exception if implicit integer conversion is attempted with conf flag set to false" {
+        val noImplicitBson = Bson {
+            implicitIntegerConversion = false
+        }
+        shouldThrow<BsonInvalidOperationException> {
+            val document = Document(VALUE_KEY, 42L).toBsonDocument()
+            noImplicitBson.decodeFromBsonDocument<Wrapper<Int>>(document)
         }
     }
 })

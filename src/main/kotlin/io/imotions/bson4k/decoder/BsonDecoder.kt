@@ -181,7 +181,7 @@ class BsonDecoder(
 
     override fun decodeFloat(): Float = decodeDouble().toFloat()
 
-    override fun decodeInt(): Int = if (reader.currentBsonType == BsonType.INT64) {
+    override fun decodeInt(): Int = if (conf.implicitIntegerConversion && reader.currentBsonType == BsonType.INT64) {
         val number = decodeBsonElement(reader::readInt64, String::toLong)
         if (number >= Int.MIN_VALUE && number <= Int.MAX_VALUE) {
             number.toInt()
@@ -194,7 +194,7 @@ class BsonDecoder(
 
     override fun decodeLong(): Long = when (useMapper) {
         BsonKind.DATE -> decodeBsonDateTimeToLong()
-        else -> if (reader.currentBsonType == BsonType.INT32) {
+        else -> if (conf.implicitIntegerConversion && reader.currentBsonType == BsonType.INT32) {
             decodeBsonElement(reader::readInt32, String::toInt).toLong()
         } else {
             decodeBsonElement(reader::readInt64, String::toLong)
