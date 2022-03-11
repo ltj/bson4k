@@ -25,6 +25,7 @@ hs_err_pid*
 .gradle
 .idea
 build
+.DS_Store
 
 # Add necessary package files
 !**/gradle/wrapper/gradle-wrapper.jar

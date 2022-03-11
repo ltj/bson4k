@@ -16,15 +16,26 @@
 
 package io.imotions.bson4k.encoder
 
+import io.imotions.bson4k.Bson
 import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
 import org.bson.BsonInt32
 import org.bson.BsonNull
 import org.bson.BsonString
+
+@Serializable
+private data class DataClassWithDefaults(
+    val s: String,
+    val b: Boolean = true,
+    val i: Int = 42
+)
 
 @ExperimentalSerializationApi
 class BsonClassEncoderTest : StringSpec({
@@ -89,11 +100,22 @@ class BsonClassEncoderTest : StringSpec({
     }
 
     "Encode class with default nullables" {
+        val encodeDefaultsBson = Bson {
+            encodeDefaults = true
+        }
         val clazz = Wrapper2Null<String, String>(y = "hello")
-        val document = bson.encodeToBsonDocument(clazz)
+        val document = encodeDefaultsBson.encodeToBsonDocument(clazz)
             .also { println(it) }
 
         document["x"] shouldBe BsonNull()
         document["y"] shouldBe BsonString("hello")
+    }
+
+    "Encode class without defaults" {
+        val clazz = DataClassWithDefaults("test")
+        val document = bson.encodeToBsonDocument(clazz)
+            .also { println(it) }
+
+        document.keys shouldContainExactly listOf("s")
     }
 })

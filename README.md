@@ -9,41 +9,40 @@ implement support for the BSON format for Kotlinx Serialization in an idiomatic 
 
 ### Encoding to `BsonDocument` or JSON string
 
-Any complex type annotated as `@Serializable` can be serialized to `BsonDocument`,
-the preferred format by MongoDB drivers, or a JSON string.
-By complex, we mean a class-like reference type; the BSON spec makes a document the root
+Any complex type annotated as `@Serializable` can be serialized to `BsonDocument`, the preferred format by MongoDB
+drivers, or a JSON string. By complex, we mean a class-like reference type; the BSON spec makes a document the root
 entity thus it makes no sense to support top-level serialization of primitives, i.e. Kotlin basic types.
 
 ### Decoding from `BsonDocument` or JSON string
 
-Likewise, any BSON document can be deserialized into its Kotlin "serializable" object counterpart.
-Alternatively, a JSON string can be parsed as long as it is valid BSON.
+Likewise, any BSON document can be deserialized into its Kotlin "serializable" object counterpart. Alternatively, a JSON
+string can be parsed as long as it is valid BSON.
 
 ### Serializer-free type mapping for primitives
 
 We introduce a type-mapping feature that allows you to work with clean `PrimitiveKind` serializers and map these to a
-specific BSON type at runtime with minimal overhead (e.g. for UUIDs).
-This is meant as a supplement to the existing extendability options of Kotlinx Serialization,
-especially when working with a multiplatform library that brings its own serializable types accompanied by
-format-agnostic serializers.
+specific BSON type at runtime with minimal overhead (e.g. for UUIDs). This is meant as a supplement to the existing
+extendability options of Kotlinx Serialization, especially when working with a multiplatform library that brings its own
+serializable types accompanied by format-agnostic serializers.
 
 One of the strengths of Kotlin's serialization runtime is its extendability. If a type is not supported you can very
-easily write a `KSerializer<T>` for that type. Kotlin's multiplatform primitive types are the only types supported by the
+easily write a `KSerializer<T>` for that type. Kotlin's multiplatform primitive types are the only types supported by
+the
 `Encoder`/`Decoder` interfaces which makes perfect sense, since multiplatform support is a top priority.
 
 However, this leads to many developers writing custom serializers for common unsupported types
-(e.g. UUID, LocalDateTime, etc.) which map to a supported native type in the serialization format. While
-convenient this comes with drawbacks:
+(e.g. UUID, LocalDateTime, etc.) which map to a supported native type in the serialization format. While convenient this
+comes with drawbacks:
 
 - The serializer must depend on a concrete encoder or decoder that supports serialization to/from these native types.
-- If you consume a (possibly multiplatform) library that already provides serializers for its types, you are required
-  to implement mapping types that are a copy/paste from the library types. Just in order to use your own serializers.
+- If you consume a (possibly multiplatform) library that already provides serializers for its types, you are required to
+  implement mapping types that are a copy/paste from the library types. Just in order to use your own serializers.
 
 Serializers module configuration can mitigate these issues to some degree, but it quickly becomes difficult to manage.
 
 ## Usage
 
-### Configuration
+### Configuration overview
 
 ```kotlin
 val bson = Bson {} // Default configuration
@@ -53,14 +52,19 @@ val bson = Bson {
     serializersModule = mySerializersModule // Configure serializers module .
     addTypeMapping(MyUUIDSerializer, BsonKind.UUID) // Add a type mapping. Can be called multiple times.
     allowStructuredMapKeys = true // Enable serialization of complex map keys using arrays ([k, v...kn, vn])
+    implicitIntegerConversion = false // Disable attempt to implicitly convert integer kinds
+    encodeDefaults = true // Always encode default values
 }
 ```
-| Configuration parameter  | Optional | Default  | Accepted input                                     |
-| ------------------------ | -------- | -------- | -------------------------------------------------- |
-| `serializersModule`      | yes      | None     | T : SerializersModule                              |
-| `classDiscriminator`     | yes      | "__type" | String (avoid leading reserved bson chars like `$` |
-| `addTypeMapping`         | yes      | None.    | `addTypeMapping(Serializer, BsonKind)`             |
-| `allowStructuredMapKeys` | yes      | `false`  | Boolean                                            |
+
+| Configuration parameter     | Optional | Default   | Accepted input                                     |
+|-----------------------------|----------|-----------|----------------------------------------------------|
+| `serializersModule`         | yes      | None      | T : SerializersModule                              |
+| `classDiscriminator`        | yes      | "__type"  | String (avoid leading reserved bson chars like `$` |
+| `addTypeMapping`            | yes      | None.     | `addTypeMapping(Serializer, BsonKind)`             |
+| `allowStructuredMapKeys`    | yes      | `false`   | Boolean                                            |
+| `implicitIntegerConversion` | yes      | `true`    | Boolean                                            |
+| `encodeDefaults`            | yes      | `false`   | Boolean                                            |
 
 ### Serialization
 
@@ -146,8 +150,8 @@ val document = bson.encodeToBsonDocument(user)
 
 ### Type mappings
 
-Sometimes it is beneficial to use a primitive-kind serializer while still using a more specialized format type. This
-can be achieved via the type mapping feature. The possible target BSON types are specified in the `BsonKind` enum:
+Sometimes it is beneficial to use a primitive-kind serializer while still using a more specialized format type. This can
+be achieved via the type mapping feature. The possible target BSON types are specified in the `BsonKind` enum:
 
 | BsonKind | Supported primitive kind(s) | Accepted input -> output    | BSON Type used     |
 | -------- | --------------------------- | --------------------------- | ------------------ |
@@ -155,13 +159,26 @@ can be achieved via the type mapping feature. The possible target BSON types are
 | DATE     | String, Long                | ISO String or Epoch ms Long | Date               |
 | ObjectId | String                      | ObjectId hex String         | ObjectId           |
 
+## Implicit integer conversion
+
+By default, the decoder will attempt to gracefully handle a situation where an integer type (`Int` or `Long`) is
+expected but the integer kind found in the document maps to the other type. Example: An `Int` is expected but the BSON
+type is INT64, or a `Long` is expected but the BSON type is INT32.
+
+The reason for having this implicit conversion, is that you might not control the BSON document source. In many cases
+where BSON is generated from JSON all integer values are encoded as INT64 as a safe default. For the most part, this
+implicit conversion is safe to use. Only in the case where an INT64 cannot be converted to `Int` will the decoder throw
+an exception.
+
+If you need strict control of the integer types, you can disable this behavior in the configuration.
+
 ## Acknowledgements
 
 **KBson**: A great many thanks to [jershell](https://github.com/jershell) for
 his [kbson](https://github.com/jershell/kbson)
 library. The code has provided a lot of inspiration. It was considered to fork and provide PRs for kbson, but for
-several reasons we wanted to start over: getting our hands dirty, avoid contextual serialization and being able to quickly
-adapt this library to our own needs.
+several reasons we wanted to start over: getting our hands dirty, avoid contextual serialization and being able to
+quickly adapt this library to our own needs.
 
 **avro4K**: Beside being an awesome library that brings in Avro support in Kotlinx serialization, this project also
 provided insights on implementing a custom serialization format in abundance.

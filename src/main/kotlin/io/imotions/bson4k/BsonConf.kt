@@ -29,5 +29,7 @@ data class BsonConf internal constructor(
     val serializersModule: SerializersModule = EmptySerializersModule,
     val classDiscriminator: String = CLASS_DISCRIMINATOR,
     val bsonTypeMappings: Map<SerialName, BsonKind> = emptyMap(),
-    val allowStructuredMapKeys: Boolean = false
+    val allowStructuredMapKeys: Boolean = false,
+    val implicitIntegerConversion: Boolean = true,
+    val encodeDefaults: Boolean = false
 )
