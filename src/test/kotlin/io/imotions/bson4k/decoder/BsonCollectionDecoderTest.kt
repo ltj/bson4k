@@ -26,6 +26,7 @@ import org.bson.Document
 
 private val list = listOf(12, 34, 56, 78, 90)
 private val nullableList = listOf(12, null, 56, 78, null)
+private val longList = listOf(12L, 34L, 56L, 78L, 90L)
 
 @ExperimentalSerializationApi
 class BsonCollectionDecoderTest : StringSpec({
@@ -80,5 +81,21 @@ class BsonCollectionDecoderTest : StringSpec({
 
         val wrapper = bson.decodeFromBsonDocument<CollectionWrapper<List<Int>>>(document.toBsonDocument())
         wrapper shouldBe CollectionWrapper(nestedLists)
+    }
+
+    "Decode collection with implicit integer conversion INT64 -> INT32" {
+        val document = Document("collection", longList)
+        println(document.toJson())
+        val wrapper = bson.decodeFromBsonDocument<CollectionWrapper<Int>>(document.toBsonDocument())
+
+        wrapper shouldBe CollectionWrapper(list)
+    }
+
+    "Decode collection with implicit integer conversion INT32 -> INT64" {
+        val document = Document("collection", list)
+        println(document.toJson())
+        val wrapper = bson.decodeFromBsonDocument<CollectionWrapper<Long>>(document.toBsonDocument())
+
+        wrapper shouldBe CollectionWrapper(longList)
     }
 })
