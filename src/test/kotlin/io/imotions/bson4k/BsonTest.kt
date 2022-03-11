@@ -19,6 +19,7 @@ package io.imotions.bson4k
 import io.imotions.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule
@@ -106,6 +107,17 @@ class BsonTest : StringSpec({
         val deserialized = mappingBson.decodeFromBsonDocument<StringNullableDateContainer>(doc)
 
         deserialized shouldBe clazz
+    }
+
+    "Encode and decode without serialized default values" {
+        val clazz = Wrapper2Null<Boolean, Boolean>(y = false)
+        val doc = bson.encodeToBsonDocument(clazz)
+
+        doc.keys shouldContainExactly listOf("y")
+
+        val deserialized = bson.decodeFromBsonDocument<Wrapper2Null<Boolean, Boolean>>(doc)
+
+        deserialized shouldBe Wrapper2Null(null, false)
     }
 
     "Adding an invalid type mapping in the builder should throw" {
