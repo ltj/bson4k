@@ -20,6 +20,7 @@ import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.bson.BsonDocument
 import org.bson.Document
 
 @ExperimentalSerializationApi
@@ -67,5 +68,12 @@ class BsonClassDecoderTest : StringSpec({
         val doc = Document("a", null).append("b", null)
         val deserialized = bson.decodeFromBsonDocument<CustomNullables>(doc.toBsonDocument())
         deserialized shouldBe CustomNullables(null)
+    }
+
+    "Decode object" {
+        val document = BsonDocument()
+        val testClass = bson.decodeFromBsonDocument<ObjectNone>(document)
+
+        testClass shouldBe ObjectNone
     }
 })
