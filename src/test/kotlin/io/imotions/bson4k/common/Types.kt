@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 iMotions A/S
+ * Copyright 2022 iMotions A/S
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,8 @@ sealed class SealedClass {
     data class PolyTwo(val value: String) : SealedClass()
     @Serializable
     data class PolyList(val list: List<PolyOne>) : SealedClass()
+    @Serializable
+    object PolyStatic : SealedClass()
 }
 
 // Wrappers
@@ -63,6 +65,9 @@ class Class3<A, B, C>(val x: A, val y: B, val z: C)
 
 @Serializable
 class Class2Collection<A, B>(val x: A, val y: Collection<B>)
+
+@Serializable
+object ObjectNone
 
 // Enums
 

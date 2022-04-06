@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 iMotions A/S
+ * Copyright 2022 iMotions A/S
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -117,5 +116,21 @@ class BsonClassEncoderTest : StringSpec({
             .also { println(it) }
 
         document.keys shouldContainExactly listOf("s")
+    }
+
+    "Encode object" {
+        val obj = ObjectNone
+        val document = bson.encodeToBsonDocument(obj)
+            .also { println(it) }
+
+        document.keys.size shouldBe 0
+    }
+
+    "Encode wrapped object" {
+        val clazz = Wrapper(ObjectNone)
+        val document = bson.encodeToBsonDocument(clazz)
+            .also { println(it) }
+
+        document.getDocument("value").keys.size shouldBe 0
     }
 })

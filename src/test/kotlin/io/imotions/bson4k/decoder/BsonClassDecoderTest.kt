@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 iMotions A/S
+ * Copyright 2022 iMotions A/S
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import io.imotions.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi
+import org.bson.BsonDocument
 import org.bson.Document
 
 @ExperimentalSerializationApi
@@ -67,5 +68,12 @@ class BsonClassDecoderTest : StringSpec({
         val doc = Document("a", null).append("b", null)
         val deserialized = bson.decodeFromBsonDocument<CustomNullables>(doc.toBsonDocument())
         deserialized shouldBe CustomNullables(null)
+    }
+
+    "Decode object" {
+        val document = BsonDocument()
+        val testClass = bson.decodeFromBsonDocument<ObjectNone>(document)
+
+        testClass shouldBe ObjectNone
     }
 })

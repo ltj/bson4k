@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 iMotions A/S
+ * Copyright 2022 iMotions A/S
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,5 +78,14 @@ class BsonPolymorphicDecoderTest : StringSpec({
 
         val deserialized = bson.decodeFromBsonDocument<CollectionWrapper<SealedClass>>(doc)
         deserialized shouldBe CollectionWrapper(list)
+    }
+
+    "Decode polymorphic object type" {
+        val doc = Document(CLASS_DISCRIMINATOR, SealedClass.PolyStatic::class.qualifiedName)
+            .toBsonDocument()
+        println(doc.toJson())
+
+        val deserialized = bson.decodeFromBsonDocument<SealedClass>(doc)
+        deserialized shouldBe SealedClass.PolyStatic
     }
 })
