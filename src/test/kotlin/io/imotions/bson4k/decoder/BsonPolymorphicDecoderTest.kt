@@ -79,4 +79,13 @@ class BsonPolymorphicDecoderTest : StringSpec({
         val deserialized = bson.decodeFromBsonDocument<CollectionWrapper<SealedClass>>(doc)
         deserialized shouldBe CollectionWrapper(list)
     }
+
+    "Decode polymorphic object type" {
+        val doc = Document(CLASS_DISCRIMINATOR, SealedClass.PolyStatic::class.qualifiedName)
+            .toBsonDocument()
+        println(doc.toJson())
+
+        val deserialized = bson.decodeFromBsonDocument<SealedClass>(doc)
+        deserialized shouldBe SealedClass.PolyStatic
+    }
 })
