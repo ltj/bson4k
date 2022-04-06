@@ -31,15 +31,15 @@ repositories {
 }
 
 dependencies {
-    ktlint("com.pinterest:ktlint:0.44.0")
+    ktlint("com.pinterest:ktlint:0.45.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.1")
-    implementation("org.mongodb:bson:4.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
+    implementation("org.mongodb:bson:4.5.1")
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
-    testImplementation("io.kotest:kotest-runner-junit5:5.1.0")
-    testImplementation("io.kotest:kotest-assertions-core:5.1.0")
-    testImplementation("io.kotest:kotest-property:5.1.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    testImplementation("io.kotest:kotest-runner-junit5:5.2.2")
+    testImplementation("io.kotest:kotest-assertions-core:5.2.2")
+    testImplementation("io.kotest:kotest-property:5.2.2")
 }
 
 tasks.test {
