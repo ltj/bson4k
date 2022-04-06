@@ -29,9 +29,9 @@ class BsonPolymorphicEncoderTest : StringSpec({
         val document = bson.encodeToBsonDocument(SealedClass.serializer(), polyClass)
             .also { println(it.toJson()) }
 
-        val serialized = json.decodeFromString(SealedClass.serializer(), document.toJson())
+        val deserialized = json.decodeFromString(SealedClass.serializer(), document.toJson())
         document.firstKey shouldBe CLASS_DISCRIMINATOR
-        serialized shouldBe polyClass
+        deserialized shouldBe polyClass
     }
 
     "Encode wrapped polymorphic type" {
@@ -62,5 +62,13 @@ class BsonPolymorphicEncoderTest : StringSpec({
         val deserialized =
             json.decodeFromString(CollectionWrapper.serializer(SealedClass.serializer()), document.toJson())
         deserialized shouldBe wrapper
+    }
+
+    "Encode sealed object type" {
+        val obj = SealedClass.PolyStatic
+        val document = bson.encodeToBsonDocument(SealedClass.serializer(), obj).also { println(it.toJson()) }
+
+        document.firstKey shouldBe CLASS_DISCRIMINATOR
+        document.keys.size shouldBe 1
     }
 })

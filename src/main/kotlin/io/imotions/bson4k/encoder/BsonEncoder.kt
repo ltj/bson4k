@@ -56,9 +56,10 @@ class BsonEncoder(
 
     override fun beginStructure(descriptor: SerialDescriptor): CompositeEncoder {
         when (descriptor.kind) {
-            StructureKind.CLASS -> when (state) {
-                State.POLYMORPHIC -> state = State.BEGIN
-                else -> writer.writeStartDocument()
+            StructureKind.CLASS -> if (state == State.POLYMORPHIC) {
+                state = State.BEGIN
+            } else {
+                writer.writeStartDocument()
             }
             StructureKind.MAP -> {
                 state = if (descriptor.elementDescriptors.first().kind is StructureKind.CLASS) {
@@ -73,7 +74,11 @@ class BsonEncoder(
                     State.MAP
                 }
             }
-            StructureKind.OBJECT -> writer.writeStartDocument()
+            StructureKind.OBJECT -> if (state == State.POLYMORPHIC) {
+                state = State.BEGIN
+            } else {
+                writer.writeStartDocument()
+            }
             StructureKind.LIST -> {
                 if (state == State.ROOT) throw rootNotDocumentException()
                 writer.writeStartArray()
