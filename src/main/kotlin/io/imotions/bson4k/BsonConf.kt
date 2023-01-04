@@ -26,7 +26,7 @@ typealias SerialName = String
 
 @ExperimentalSerializationApi
 data class BsonConf internal constructor(
-    val serializersModule: SerializersModule = EmptySerializersModule,
+    val serializersModule: SerializersModule = EmptySerializersModule(),
     val classDiscriminator: String = CLASS_DISCRIMINATOR,
     val bsonTypeMappings: Map<SerialName, BsonKind> = emptyMap(),
     val allowStructuredMapKeys: Boolean = false,

@@ -15,14 +15,14 @@
  */
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.0"
     `maven-publish`
     id("io.gitlab.arturbosch.detekt").version("1.19.0")
 }
 
 group = "io.imotions.bson4k"
-version = "0.4.1"
+version = "0.4.2"
 
 val ktlint by configurations.creating
 
@@ -33,13 +33,13 @@ repositories {
 dependencies {
     ktlint("com.pinterest:ktlint:0.45.1")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.3.2")
-    implementation("org.mongodb:bson:4.5.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
+    implementation("org.mongodb:bson:4.8.1")
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-    testImplementation("io.kotest:kotest-runner-junit5:5.2.2")
-    testImplementation("io.kotest:kotest-assertions-core:5.2.2")
-    testImplementation("io.kotest:kotest-property:5.2.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
+    testImplementation("io.kotest:kotest-assertions-core:5.5.4")
+    testImplementation("io.kotest:kotest-property:5.5.4")
 }
 
 tasks.test {
