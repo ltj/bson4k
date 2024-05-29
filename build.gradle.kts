@@ -32,7 +32,7 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
-    implementation("org.mongodb:bson:4.8.1")
+    implementation("org.mongodb:bson:5.0.1")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
     testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
