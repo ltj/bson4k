@@ -33,7 +33,7 @@ class BsonTest : StringSpec({
     "Builder should return Bson with default configuration" {
         val bson = Bson { }
         bson.configuration.classDiscriminator shouldBe CLASS_DISCRIMINATOR
-        bson.configuration.serializersModule shouldBe EmptySerializersModule
+        bson.configuration.serializersModule shouldBe EmptySerializersModule()
     }
 
     "Builder should fail on invalid chars in class discriminator" {
