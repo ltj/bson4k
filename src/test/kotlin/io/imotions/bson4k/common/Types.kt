@@ -16,6 +16,7 @@
 
 package io.imotions.bson4k.common
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 import java.time.Instant
@@ -27,10 +28,13 @@ import java.util.*
 sealed class SealedClass {
     @Serializable
     data class PolyOne(val value: Int) : SealedClass()
+
     @Serializable
     data class PolyTwo(val value: String) : SealedClass()
+
     @Serializable
     data class PolyList(val list: List<PolyOne>) : SealedClass()
+
     @Serializable
     object PolyStatic : SealedClass()
 }
@@ -50,7 +54,12 @@ data class Wrapper2<A, B>(val x: A, val y: B)
 data class Wrapper2Null<A, B>(val x: A? = null, val y: B?)
 
 @Serializable
-data class CustomNullables(val a: String? = null, @Serializable(CustomNullableSerializer::class) val b: String? = null)
+data class CustomNullables @OptIn(ExperimentalSerializationApi::class) constructor(
+    val a: String? = null,
+    @Serializable(
+        CustomNullableSerializer::class
+    ) val b: String? = null
+)
 
 @Serializable
 data class MapWrapper<K, V>(val map: Map<K, V>)
