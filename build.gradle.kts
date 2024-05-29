@@ -18,20 +18,18 @@ plugins {
     kotlin("jvm") version "1.8.0"
     kotlin("plugin.serialization") version "1.8.0"
     `maven-publish`
-    id("io.gitlab.arturbosch.detekt").version("1.19.0")
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
 group = "io.imotions.bson4k"
 version = "0.4.2"
-
-val ktlint by configurations.creating
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    ktlint("com.pinterest:ktlint:0.45.1")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
     implementation("org.mongodb:bson:4.8.1")
@@ -81,31 +79,6 @@ publishing {
     }
 }
 
-// Ktlint
-val outputDir = "${project.buildDir}/reports/ktlint/"
-val inputFiles = project.fileTree(mapOf("dir" to "src", "include" to "**/*.kt"))
-
-val ktlintCheck by tasks.registering(JavaExec::class) {
-    inputs.files(inputFiles)
-    outputs.dir(outputDir)
-
-    description = "Check Kotlin code style."
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args = listOf("src/**/*.kt")
-}
-
-val ktlintFormat by tasks.registering(JavaExec::class) {
-    inputs.files(inputFiles)
-    outputs.dir(outputDir)
-
-    description = "Fix Kotlin code style deviations."
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args = listOf("-F", "src/**/*.kt")
-    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
-}
-
-tasks.detekt {
-    dependsOn("ktlintCheck")
+detekt {
+    buildUponDefaultConfig = true
 }
