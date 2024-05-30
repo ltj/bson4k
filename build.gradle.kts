@@ -1,45 +1,27 @@
-/*
- * Copyright 2022 iMotions A/S
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *        http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 plugins {
-    kotlin("jvm") version "1.8.0"
-    kotlin("plugin.serialization") version "1.8.0"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
     `maven-publish`
-    id("io.gitlab.arturbosch.detekt").version("1.19.0")
+    id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
-group = "io.imotions.bson4k"
-version = "0.4.2"
-
-val ktlint by configurations.creating
+group = "dk.ltj.bson4k"
+version = "0.5.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    ktlint("com.pinterest:ktlint:0.45.1")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.6")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.4.1")
-    implementation("org.mongodb:bson:4.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+    implementation("org.mongodb:bson:5.0.1")
 
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-    testImplementation("io.kotest:kotest-runner-junit5:5.5.4")
-    testImplementation("io.kotest:kotest-assertions-core:5.5.4")
-    testImplementation("io.kotest:kotest-property:5.5.4")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+    testImplementation("io.kotest:kotest-runner-junit5:5.9.0")
+    testImplementation("io.kotest:kotest-assertions-core:5.9.0")
+    testImplementation("io.kotest:kotest-property:5.9.0")
 }
 
 tasks.test {
@@ -66,10 +48,10 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/imotions/bson4k")
+            url = uri("https://maven.pkg.github.com/ltj/bson4k")
             credentials {
-                username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
-                password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GH_USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GH_TOKEN")
             }
         }
     }
@@ -81,31 +63,6 @@ publishing {
     }
 }
 
-// Ktlint
-val outputDir = "${project.buildDir}/reports/ktlint/"
-val inputFiles = project.fileTree(mapOf("dir" to "src", "include" to "**/*.kt"))
-
-val ktlintCheck by tasks.registering(JavaExec::class) {
-    inputs.files(inputFiles)
-    outputs.dir(outputDir)
-
-    description = "Check Kotlin code style."
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args = listOf("src/**/*.kt")
-}
-
-val ktlintFormat by tasks.registering(JavaExec::class) {
-    inputs.files(inputFiles)
-    outputs.dir(outputDir)
-
-    description = "Fix Kotlin code style deviations."
-    classpath = ktlint
-    mainClass.set("com.pinterest.ktlint.Main")
-    args = listOf("-F", "src/**/*.kt")
-    jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
-}
-
-tasks.detekt {
-    dependsOn("ktlintCheck")
+detekt {
+    buildUponDefaultConfig = true
 }

@@ -1,4 +1,4 @@
-![Build and Test](https://github.com/imotions/bson4k/workflows/Build%20and%20Test/badge.svg)
+![Build and Test](https://github.com/ltj/bson4k/workflows/Build%20and%20Test/badge.svg)
 
 # BSON 4K
 
@@ -98,7 +98,7 @@ object UUIDSerializer : KSerializer<UUID> {
         UUID.fromString(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.uuid", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.uuid", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: UUID) =
         encoder.encodeString(value.toString())
