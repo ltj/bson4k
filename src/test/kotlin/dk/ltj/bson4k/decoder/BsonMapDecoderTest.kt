@@ -97,7 +97,8 @@ class BsonMapDecoderTest : StringSpec({
             .append(
                 UUID.randomUUID().toString(),
                 Document(
-                    "uuid", BsonBinary(UUID.randomUUID(), UuidRepresentation.STANDARD)
+                    "uuid",
+                    BsonBinary(UUID.randomUUID(), UuidRepresentation.STANDARD)
                 )
             )
             .also { println(it) }
