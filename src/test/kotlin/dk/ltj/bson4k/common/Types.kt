@@ -1,21 +1,23 @@
 /*
- * Copyright 2022 iMotions A/S
+ *  Copyright 2024 Lars Toft Jacobsen
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 
-package io.imotions.bson4k.common
+package dk.ltj.bson4k.common
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import org.bson.types.ObjectId
 import java.time.Instant
@@ -27,10 +29,13 @@ import java.util.*
 sealed class SealedClass {
     @Serializable
     data class PolyOne(val value: Int) : SealedClass()
+
     @Serializable
     data class PolyTwo(val value: String) : SealedClass()
+
     @Serializable
     data class PolyList(val list: List<PolyOne>) : SealedClass()
+
     @Serializable
     object PolyStatic : SealedClass()
 }
@@ -50,7 +55,12 @@ data class Wrapper2<A, B>(val x: A, val y: B)
 data class Wrapper2Null<A, B>(val x: A? = null, val y: B?)
 
 @Serializable
-data class CustomNullables(val a: String? = null, @Serializable(CustomNullableSerializer::class) val b: String? = null)
+data class CustomNullables @OptIn(ExperimentalSerializationApi::class) constructor(
+    val a: String? = null,
+    @Serializable(
+        CustomNullableSerializer::class
+    ) val b: String? = null
+)
 
 @Serializable
 data class MapWrapper<K, V>(val map: Map<K, V>)

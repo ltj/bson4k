@@ -1,26 +1,27 @@
 /*
- * Copyright 2022 iMotions A/S
+ *  Copyright 2024 Lars Toft Jacobsen
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 
-package io.imotions.bson4k.encoder
+package dk.ltj.bson4k.encoder
 
-import io.imotions.bson4k.BsonConf
-import io.imotions.bson4k.BsonKind
-import io.imotions.bson4k.common.BsonEncodingException
-import io.imotions.bson4k.common.invalidKeyKindException
-import io.imotions.bson4k.common.rootNotDocumentException
+import dk.ltj.bson4k.BsonConf
+import dk.ltj.bson4k.BsonKind
+import dk.ltj.bson4k.common.BsonEncodingException
+import dk.ltj.bson4k.common.invalidKeyKindException
+import dk.ltj.bson4k.common.rootNotDocumentException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
@@ -61,6 +62,7 @@ class BsonEncoder(
             } else {
                 writer.writeStartDocument()
             }
+
             StructureKind.MAP -> {
                 state = if (descriptor.elementDescriptors.first().kind is StructureKind.CLASS) {
                     if (conf.allowStructuredMapKeys) {
@@ -74,19 +76,23 @@ class BsonEncoder(
                     State.MAP
                 }
             }
+
             StructureKind.OBJECT -> if (state == State.POLYMORPHIC) {
                 state = State.BEGIN
             } else {
                 writer.writeStartDocument()
             }
+
             StructureKind.LIST -> {
                 if (state == State.ROOT) throw rootNotDocumentException()
                 writer.writeStartArray()
             }
+
             is PolymorphicKind -> {
                 writer.writeStartDocument()
                 state = State.POLYMORPHIC
             }
+
             else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
         if (state == State.ROOT) state = State.BEGIN
@@ -101,11 +107,13 @@ class BsonEncoder(
             } else {
                 writer.writeEndDocument()
             }
+
             is StructureKind -> if (state != State.POLYMORPHIC) writer.writeEndDocument()
             is PolymorphicKind -> if (state == State.POLYMORPHIC) {
                 writer.writeEndDocument()
                 state = State.BEGIN
             }
+
             else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
     }
@@ -117,9 +125,11 @@ class BsonEncoder(
                 State.MAP_KEY -> State.MAP_VALUE
                 else -> State.MAP_KEY
             }
+
             descriptor.kind is StructureKind.OBJECT -> writer.writeName(descriptor.getElementName(index))
             descriptor.kind is PolymorphicKind && (descriptor.getElementName(index) == "type") ->
                 writer.writeName(conf.classDiscriminator)
+
             descriptor.kind is PrimitiveKind ->
                 println(descriptor.serialName)
         }

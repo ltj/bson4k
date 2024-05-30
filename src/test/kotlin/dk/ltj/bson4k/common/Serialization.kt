@@ -1,22 +1,23 @@
 /*
- * Copyright 2022 iMotions A/S
+ *  Copyright 2024 Lars Toft Jacobsen
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *        http://www.apache.org/licenses/LICENSE-2.0
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
  */
 
-package io.imotions.bson4k.common
+package dk.ltj.bson4k.common
 
-import io.imotions.bson4k.Bson
+import dk.ltj.bson4k.Bson
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.nullable
@@ -42,7 +43,7 @@ object UUIDSerializer : KSerializer<UUID> {
         UUID.fromString(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.uuid", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.uuid", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: UUID) =
         encoder.encodeString(value.toString())
@@ -53,7 +54,7 @@ object InstantLongSerializer : KSerializer<Instant> {
         Instant.ofEpochMilli(decoder.decodeLong())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.instant", PrimitiveKind.LONG)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.instant", PrimitiveKind.LONG)
 
     override fun serialize(encoder: Encoder, value: Instant) =
         encoder.encodeLong(value.toEpochMilli())
@@ -64,7 +65,7 @@ object InstantStringSerializer : KSerializer<Instant> {
         Instant.parse(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.instant", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Instant) =
         encoder.encodeString(value.toString())
@@ -75,7 +76,7 @@ object ObjectIdSerializer : KSerializer<ObjectId> {
         ObjectId(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.objectid", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.objectid", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ObjectId) =
         encoder.encodeString(value.toHexString())
