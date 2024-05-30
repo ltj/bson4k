@@ -15,10 +15,10 @@
  *
  */
 
-package io.imotions.bson4k
+package dk.ltj.bson4k
 
-import io.imotions.bson4k.decoder.BsonDecoder
-import io.imotions.bson4k.encoder.BsonEncoder
+import dk.ltj.bson4k.decoder.BsonDecoder
+import dk.ltj.bson4k.encoder.BsonEncoder
 import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.PrimitiveKind
 import kotlinx.serialization.modules.SerializersModule

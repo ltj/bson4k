@@ -15,7 +15,7 @@
  *
  */
 
-package io.imotions.bson4k.common
+package dk.ltj.bson4k.common
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerializationException
@@ -23,7 +23,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 
 internal const val allowStructuredMapKeysHint =
     "Use 'allowStructuredMapKeys = true' in 'Json {}' builder to convert such maps to " +
-        "[key1, value1, key2, value2,...] arrays."
+            "[key1, value1, key2, value2,...] arrays."
 
 sealed class BsonException(message: String) : SerializationException(message)
 
@@ -33,19 +33,19 @@ class BsonDecodingException(message: String) : BsonException(message)
 
 fun rootNotDocumentException() = BsonEncodingException(
     "BSON is a document format and serialization must be able to produce a document as the root structure for" +
-        "containing other types. Hence primitives and arrays cannot be serialized without an enclosing type."
+            "containing other types. Hence primitives and arrays cannot be serialized without an enclosing type."
 )
 
 @ExperimentalSerializationApi
 fun invalidKeyKindException(keyDescriptor: SerialDescriptor) = BsonEncodingException(
     "Value of type '${keyDescriptor.serialName}' cannot be used as a BSON map key. " +
-        "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}'.\n" +
-        allowStructuredMapKeysHint
+            "It should have either primitive or enum kind, but its kind is '${keyDescriptor.kind}'.\n" +
+            allowStructuredMapKeysHint
 )
 
 @ExperimentalSerializationApi
 fun missingClassDiscriminatorException(expectedDiscriminator: String, descriptor: SerialDescriptor) =
     BsonDecodingException(
         "The expected class discriminator '$expectedDiscriminator', was not found when decoding the " +
-            "polymorphic type '${descriptor.serialName}'."
+                "polymorphic type '${descriptor.serialName}'."
     )

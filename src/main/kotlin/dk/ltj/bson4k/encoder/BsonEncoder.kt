@@ -15,13 +15,13 @@
  *
  */
 
-package io.imotions.bson4k.encoder
+package dk.ltj.bson4k.encoder
 
-import io.imotions.bson4k.BsonConf
-import io.imotions.bson4k.BsonKind
-import io.imotions.bson4k.common.BsonEncodingException
-import io.imotions.bson4k.common.invalidKeyKindException
-import io.imotions.bson4k.common.rootNotDocumentException
+import dk.ltj.bson4k.BsonConf
+import dk.ltj.bson4k.BsonKind
+import dk.ltj.bson4k.common.BsonEncodingException
+import dk.ltj.bson4k.common.invalidKeyKindException
+import dk.ltj.bson4k.common.rootNotDocumentException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.*
 import kotlinx.serialization.encoding.AbstractEncoder
@@ -62,6 +62,7 @@ class BsonEncoder(
             } else {
                 writer.writeStartDocument()
             }
+
             StructureKind.MAP -> {
                 state = if (descriptor.elementDescriptors.first().kind is StructureKind.CLASS) {
                     if (conf.allowStructuredMapKeys) {
@@ -75,19 +76,23 @@ class BsonEncoder(
                     State.MAP
                 }
             }
+
             StructureKind.OBJECT -> if (state == State.POLYMORPHIC) {
                 state = State.BEGIN
             } else {
                 writer.writeStartDocument()
             }
+
             StructureKind.LIST -> {
                 if (state == State.ROOT) throw rootNotDocumentException()
                 writer.writeStartArray()
             }
+
             is PolymorphicKind -> {
                 writer.writeStartDocument()
                 state = State.POLYMORPHIC
             }
+
             else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
         if (state == State.ROOT) state = State.BEGIN
@@ -102,11 +107,13 @@ class BsonEncoder(
             } else {
                 writer.writeEndDocument()
             }
+
             is StructureKind -> if (state != State.POLYMORPHIC) writer.writeEndDocument()
             is PolymorphicKind -> if (state == State.POLYMORPHIC) {
                 writer.writeEndDocument()
                 state = State.BEGIN
             }
+
             else -> throw BsonEncodingException("Unsupported structure kind: ${descriptor.kind}")
         }
     }
@@ -118,9 +125,11 @@ class BsonEncoder(
                 State.MAP_KEY -> State.MAP_VALUE
                 else -> State.MAP_KEY
             }
+
             descriptor.kind is StructureKind.OBJECT -> writer.writeName(descriptor.getElementName(index))
             descriptor.kind is PolymorphicKind && (descriptor.getElementName(index) == "type") ->
                 writer.writeName(conf.classDiscriminator)
+
             descriptor.kind is PrimitiveKind ->
                 println(descriptor.serialName)
         }

@@ -15,10 +15,10 @@
  *
  */
 
-package io.imotions.bson4k.encoder
+package dk.ltj.bson4k.encoder
 
-import io.imotions.bson4k.CLASS_DISCRIMINATOR
-import io.imotions.bson4k.common.*
+import dk.ltj.bson4k.CLASS_DISCRIMINATOR
+import dk.ltj.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.serialization.ExperimentalSerializationApi

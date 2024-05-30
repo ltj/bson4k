@@ -15,7 +15,7 @@
  *
  */
 
-package io.imotions.bson4k
+package dk.ltj.bson4k
 
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.modules.EmptySerializersModule

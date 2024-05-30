@@ -15,9 +15,9 @@
  *
  */
 
-package io.imotions.bson4k.common
+package dk.ltj.bson4k.common
 
-import io.imotions.bson4k.Bson
+import dk.ltj.bson4k.Bson
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.nullable
@@ -43,7 +43,7 @@ object UUIDSerializer : KSerializer<UUID> {
         UUID.fromString(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.uuid", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.uuid", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: UUID) =
         encoder.encodeString(value.toString())
@@ -54,7 +54,7 @@ object InstantLongSerializer : KSerializer<Instant> {
         Instant.ofEpochMilli(decoder.decodeLong())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.instant", PrimitiveKind.LONG)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.instant", PrimitiveKind.LONG)
 
     override fun serialize(encoder: Encoder, value: Instant) =
         encoder.encodeLong(value.toEpochMilli())
@@ -65,7 +65,7 @@ object InstantStringSerializer : KSerializer<Instant> {
         Instant.parse(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.instant", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.instant", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: Instant) =
         encoder.encodeString(value.toString())
@@ -76,7 +76,7 @@ object ObjectIdSerializer : KSerializer<ObjectId> {
         ObjectId(decoder.decodeString())
 
     override val descriptor: SerialDescriptor =
-        PrimitiveSerialDescriptor("io.imotions.bson4k.objectid", PrimitiveKind.STRING)
+        PrimitiveSerialDescriptor("dk.ltj.bson4k.objectid", PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ObjectId) =
         encoder.encodeString(value.toHexString())

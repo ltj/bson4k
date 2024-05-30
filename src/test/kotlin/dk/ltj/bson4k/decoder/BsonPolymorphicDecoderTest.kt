@@ -15,9 +15,9 @@
  *
  */
 
-package io.imotions.bson4k.decoder
+package dk.ltj.bson4k.decoder
 
-import io.imotions.bson4k.common.*
+import dk.ltj.bson4k.common.*
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe

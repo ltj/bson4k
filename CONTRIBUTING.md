@@ -9,7 +9,7 @@ You can contribute in different ways:
 ## Submitting issues
 
 Bug reports, feature requests and general suggestions are welcome.
-Submit your issue [here](https://github.com/imotions/bson4k/issues).
+Submit your issue [here](https://github.com/ltj/bson4k/issues).
 
 * Search for existing issues to avoid reporting duplicates.
 * When submitting a bug report:
@@ -24,7 +24,7 @@ Submit your issue [here](https://github.com/imotions/bson4k/issues).
 
 ## Creating pull requests
 
-We love PRs. Submit PRs [here](https://github.com/imotions/bson4k/pulls).
+We love PRs. Submit PRs [here](https://github.com/ltj/bson4k/pulls).
 Please keep in mind that maintainers will have to support the codebase going forward,
 so familiarize yourself with the following guidelines.
 

@@ -15,10 +15,10 @@
  *
  */
 
-package io.imotions.bson4k.encoder
+package dk.ltj.bson4k.encoder
 
-import io.imotions.bson4k.Bson
-import io.imotions.bson4k.common.*
+import dk.ltj.bson4k.Bson
+import dk.ltj.bson4k.common.*
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldContainExactly

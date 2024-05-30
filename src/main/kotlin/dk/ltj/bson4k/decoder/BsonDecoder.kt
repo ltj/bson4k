@@ -15,12 +15,12 @@
  *
  */
 
-package io.imotions.bson4k.decoder
+package dk.ltj.bson4k.decoder
 
-import io.imotions.bson4k.BsonConf
-import io.imotions.bson4k.BsonKind
-import io.imotions.bson4k.common.BsonDecodingException
-import io.imotions.bson4k.common.missingClassDiscriminatorException
+import dk.ltj.bson4k.BsonConf
+import dk.ltj.bson4k.BsonKind
+import dk.ltj.bson4k.common.BsonDecodingException
+import dk.ltj.bson4k.common.missingClassDiscriminatorException
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.descriptors.PolymorphicKind
 import kotlinx.serialization.descriptors.SerialDescriptor
@@ -64,14 +64,17 @@ class BsonDecoder(
                     DECODE_DONE
                 }
             }
+
             DecoderState.LIST -> {
                 val type = reader.readBsonType()
                 if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else currentIndex++
             }
+
             DecoderState.MAP_KEY -> {
                 val type = reader.readBsonType()
                 if (type == BsonType.END_OF_DOCUMENT) DECODE_DONE else 0
             }
+
             DecoderState.MAP_VALUE -> 1
             DecoderState.POLYMORPHIC -> {
                 when (currentIndex) {
@@ -85,6 +88,7 @@ class BsonDecoder(
                             throw missingClassDiscriminatorException(conf.classDiscriminator, descriptor)
                         }
                     }
+
                     1 -> currentIndex++
                     else -> DECODE_DONE
                 }
@@ -112,6 +116,7 @@ class BsonDecoder(
             StructureKind.LIST -> {
                 beginListStructure()
             }
+
             StructureKind.MAP -> {
                 if (descriptor.elementDescriptors.first().kind == StructureKind.CLASS && conf.allowStructuredMapKeys) {
                     beginListStructure()
@@ -120,17 +125,20 @@ class BsonDecoder(
                     reader.readStartDocument()
                 }
             }
+
             is PolymorphicKind -> {
                 state = DecoderState.POLYMORPHIC
                 currentIndex = 0
                 reader.readStartDocument()
             }
+
             is StructureKind -> {
                 if (state != DecoderState.POLYMORPHIC) {
                     reader.readStartDocument()
                 }
                 state = DecoderState.DOCUMENT
             }
+
             else -> throw BsonDecodingException("Illegal begin structure kind: ${descriptor.kind}")
         }
         return super.beginStructure(descriptor)
@@ -148,6 +156,7 @@ class BsonDecoder(
             StructureKind.LIST -> {
                 reader.readEndArray()
             }
+
             StructureKind.MAP -> {
                 if (reader.state == END_OF_ARRAY) {
                     reader.readEndArray()
@@ -155,9 +164,11 @@ class BsonDecoder(
                     reader.readEndDocument()
                 }
             }
+
             is StructureKind -> {
                 reader.readEndDocument()
             }
+
             else -> {} // noop
         }
         super.endStructure(descriptor)
@@ -247,10 +258,12 @@ class BsonDecoder(
                 state = DecoderState.MAP_VALUE
                 parse(reader.readName())
             }
+
             DecoderState.MAP_VALUE -> {
                 state = DecoderState.MAP_KEY
                 readOps()
             }
+
             else -> readOps()
         }
     }

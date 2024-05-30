@@ -5,7 +5,7 @@ plugins {
     id("io.gitlab.arturbosch.detekt") version "1.23.6"
 }
 
-group = "io.imotions.bson4k"
+group = "dk.ltj.bson4k"
 version = "0.4.2"
 
 repositories {
@@ -48,7 +48,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/imotions/bson4k")
+            url = uri("https://maven.pkg.github.com/ltj/bson4k")
             credentials {
                 username = project.findProperty("gpr.user") as String? ?: System.getenv("USERNAME")
                 password = project.findProperty("gpr.key") as String? ?: System.getenv("TOKEN")

@@ -15,11 +15,11 @@
  *
  */
 
-package io.imotions.bson4k.encoder
+package dk.ltj.bson4k.encoder
 
-import io.imotions.bson4k.common.CollectionWrapper
-import io.imotions.bson4k.common.Wrapper
-import io.imotions.bson4k.common.bson
+import dk.ltj.bson4k.common.CollectionWrapper
+import dk.ltj.bson4k.common.Wrapper
+import dk.ltj.bson4k.common.bson
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.property.checkAll

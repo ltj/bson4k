@@ -15,6 +15,6 @@
  *
  */
 
-package io.imotions.bson4k.common
+package dk.ltj.bson4k.common
 
 const val VALUE_KEY = "value"
